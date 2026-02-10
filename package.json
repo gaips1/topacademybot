@@ -18,7 +18,7 @@
   },
   "scripts": {
     "dev": "tsx --env-file=.env --watch src/bot.ts",
-    "start": "node --env-file=.env dist/bot.js",
-    "build": "tsc"
+    "start": "node --env-file=.env dist/src/bot.js",
+    "build": "tsc --outDir ./dist"
   }
 }

@@ -14,8 +14,6 @@ export const clientsCache = new LRUCache<number, ApiClient>({
     updateAgeOnHas: false
 });
 
-const EVALUATE_COOLDOWN_MS = 300_000
-
 export async function userLoader(ctx: MyContext, next: NextFunction) {
     const userId = ctx.from!.id;
     let client = clientsCache.get(userId);
@@ -41,7 +39,7 @@ export async function userLoader(ctx: MyContext, next: NextFunction) {
     if (!ctx.callbackQuery?.data?.startsWith("evaluates/")) {
         const now = Date.now();
         const lastCheck = ctx.session.evaluateCooldown;
-        if (now - lastCheck < EVALUATE_COOLDOWN_MS) {
+        if (now - lastCheck < 300_000) {
             await next();
             return;
         }
