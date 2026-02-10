@@ -1,6 +1,7 @@
 import { Composer, InlineKeyboard } from "grammy";
 import type { MyContext } from "../types.js";
 import { STATUS_WAS_TRANSLATED } from "../api/types/activity.js";
+import { splitText } from "../utils.js";
 
 export const composer = new Composer<MyContext>();
 
@@ -10,29 +11,6 @@ const getMarks = (a: any) =>
     .filter(v => v != null)
     .join(", ");
 
-
-function splitText(text: string, limit: number = 4096): string[] {
-    const parts: string[] = [];
-    let currentPart = "";
-    const lines = text.split('\n');
-
-    for (const line of lines) {
-        if (currentPart.length + line.length + 1 > limit) {
-            parts.push(currentPart);
-            currentPart = line;
-        } else {
-            if (currentPart) {
-                currentPart += "\n";
-            }
-            currentPart += line;
-        }
-    }
-    if (currentPart) {
-        parts.push(currentPart);
-    }
-
-    return parts;
-}
 
 composer.callbackQuery(/^activity\//, async (ctx) => {
     const page = parseInt(ctx.callbackQuery.data.split("/")[1]!)
