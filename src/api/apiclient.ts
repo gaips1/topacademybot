@@ -92,7 +92,17 @@ export class ApiClient {
             throw new Error(`Request to ${endpoint} failed with status: ${response.status}`);
         }
 
-        return await response.json() as T;
+        const text = await response.text();
+        if (!text) {
+            return null as unknown as T;
+        }
+
+        try {
+            return JSON.parse(text) as T;
+        } catch (e) {
+            console.error(`Failed to parse JSON from ${endpoint}. Response text:`, text);
+            throw e;
+        }
     }
 
 

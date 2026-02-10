@@ -21,9 +21,8 @@ export const start_command_handler = async (ctx: MyContext) => {
     
     const coins = data.gaming_points[0]!.points
     const gems = data.gaming_points[1]!.points
-
-    await ctx.reply(
-`Привет, ${data.full_name}!
+    const text = `
+Привет, ${data.full_name}!
 
 ID: ${data.student_id}.
 Дата регистрации: ${data.registration_date}.
@@ -33,9 +32,14 @@ ID: ${data.student_id}.
 Топгемы:  ${gems}.
 Топмани:  ${coins + gems}.
 
-Это неофициальный бот. Он не связан с Компьютерной академией ТОР и разработан сторонними авторами.`,
-    { reply_markup: kb }
-  );
+Это неофициальный бот. Он не связан с Компьютерной академией ТОР и разработан сторонними авторами.`
+
+    if (ctx.callbackQuery) {
+        await ctx.editMessageText(text, { reply_markup: kb })
+    } else {
+        await ctx.reply(text, { reply_markup: kb })
+    }
 };
 
 composer.command("start", start_command_handler)
+composer.callbackQuery("mm", start_command_handler)
