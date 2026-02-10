@@ -24,13 +24,13 @@ export const start_command_handler = async (ctx: MyContext) => {
     const text = `
 Привет, ${data.full_name}!
 
-ID: ${data.student_id}.
-Дата регистрации: ${data.registration_date}.
-Группа: ${data.group_name}.
+Ваш ID: ${data.student_id}
+Дата регистрации: ${new Date(data.registration_date).toLocaleDateString("ru-RU")}
+Группа: ${data.group_name}
 
-Топкоины: ${coins}.
-Топгемы:  ${gems}.
-Топмани:  ${coins + gems}.
+Количество топкоинов: ${coins}
+Количество топгемов:  ${gems}
+Количество топмани:  ${coins + gems}
 
 Это неофициальный бот. Он не связан с Компьютерной академией ТОР и разработан сторонними авторами.`
 
