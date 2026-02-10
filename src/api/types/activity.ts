@@ -14,3 +14,9 @@ export interface Activity {
 }
 
 export type ActivityList = Activity[];
+
+export const STATUS_WAS_TRANSLATED: Record<number, string> = {
+    0: "Отсутствовал",
+    1: "Присутствовал",
+    2: "Опоздал"
+}
