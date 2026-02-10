@@ -16,14 +16,28 @@ export const insertUser = async (id: number | string, username: string, password
   return result;
 };
 
-export const updateUserAccessToken = async (
+export const updateUser = async (
   id: bigint | number | string,
+  username: string,
+  password: string,
   token: string
 ) => {
-  console.log("обновил токен!")
-  const result = await db.update(users).set({ accessToken: token }).where(
+  const result = await db.update(users).set({ 
+    username, 
+    password, 
+    accessToken: token 
+  }).where(
     eq(users.id, BigInt(id))
   );
   return result;
 };
 
+export const updateUserAccessToken = async (
+  id: bigint | number | string,
+  token: string
+) => {
+  const result = await db.update(users).set({ accessToken: token }).where(
+    eq(users.id, BigInt(id))
+  );
+  return result;
+};

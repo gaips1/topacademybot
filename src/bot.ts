@@ -25,6 +25,7 @@ bot.api.config.use(throttler);
 
 bot.use(createConversation(auth, { plugins: [hydrate()]} ));
 bot.on(["message:entities:bot_command", "callback_query"], userLoader);
+bot.command("relogin", async (ctx) => {await ctx.conversation.enter("auth", true)})
 bot.use(handlers);
 
 if (process.env.NODE_ENV === 'prod') {

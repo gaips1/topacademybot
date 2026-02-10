@@ -1,12 +1,12 @@
 import type { Conversation } from "@grammyjs/conversations";
 import { ApiClient } from "../api/apiclient.js";
-import { insertUser } from "../db/services/users.service.js";
+import { insertUser,  updateUser } from "../db/services/users.service.js";
 import { clientsCache } from "../middlewares.js";
 import type { MyContext, MyConversationContext } from "../types.js";
 import { start_command_handler } from "./start.js";
 import { setTimeout } from 'timers/promises';
 
-export async function auth(conversation: Conversation<MyContext, MyConversationContext>, ctx: MyContext) {
+export async function auth(conversation: Conversation<MyContext, MyConversationContext>, ctx: MyContext, update: boolean = false) {
     await ctx.reply(
         "Введите ваш логин и пароль от Top Academy в формате: <code>логин пароль</code>.\n" +
         "Для отмены введите <code>отмена</code>\n\n" +
@@ -40,11 +40,15 @@ export async function auth(conversation: Conversation<MyContext, MyConversationC
                 continue;
             }
 
-            client = new ApiClient(login, password, token);
+            client = new ApiClient(login, password, token)
             ctx.ApiClient = client
 
             await conversation.external(async () => {
-                await insertUser(msg.from.id, login, password, token);
+                if (update) {
+                    await updateUser(msg.from.id, login, password, token)
+                } else {
+                    await insertUser(msg.from.id, login, password, token)
+                }
                 clientsCache.set(msg.from.id, client);
             });
 
