@@ -12,6 +12,7 @@ import type { MyApi, MyContext, SessionData } from "./types.js";
 import { userLoader } from "./middlewares.js";
 import { composer as startHandlers } from "./handlers/start.js";
 import { composer as evaluatesHandlers } from "./handlers/evaluates.js";
+import { composer as leaderboardsHandlers } from "./handlers/leaderboards.js";
 import { auth } from "./handlers/auth.js";
 
 const bot = new Bot<MyContext, MyApi>(process.env.TOKEN!,);
@@ -32,6 +33,7 @@ bot.use(createConversation(auth, { plugins: [hydrate()]} ));
 bot.on(["message:entities:bot_command", "callback_query"], userLoader);
 bot.use(startHandlers);
 bot.use(evaluatesHandlers);
+bot.use(leaderboardsHandlers);
 
 if (process.env.NODE_ENV === 'prod') {
   const server = http.createServer(webhookCallback(bot, 'http'));
