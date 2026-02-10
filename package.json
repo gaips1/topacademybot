@@ -1,0 +1,24 @@
+{
+  "type": "module",
+  "devDependencies": {
+    "@types/node": "^25.2.2",
+    "drizzle-kit": "^0.31.8",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "@grammyjs/auto-retry": "^2.0.2",
+    "@grammyjs/conversations": "^2.1.1",
+    "@grammyjs/hydrate": "^1.6.0",
+    "@grammyjs/transformer-throttler": "^1.2.1",
+    "drizzle-orm": "^0.45.1",
+    "grammy": "^1.39.3",
+    "lru-cache": "^11.2.5",
+    "mysql2": "^3.16.3"
+  },
+  "scripts": {
+    "dev": "tsx --env-file=.env --watch src/bot.ts",
+    "start": "node --env-file=.env dist/bot.js",
+    "build": "tsc"
+  }
+}
