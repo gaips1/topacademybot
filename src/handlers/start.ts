@@ -21,18 +21,18 @@ export const start_command_handler = async (ctx: MyContext) => {
     
     const coins = data.gaming_points[0]!.points
     const gems = data.gaming_points[1]!.points
-    const text = `
-Привет, ${data.full_name}!
+    const text = 
+        `Привет, ${data.full_name}!\n\n` +
 
-Ваш ID: ${data.student_id}
-Дата регистрации: ${new Date(data.registration_date).toLocaleDateString("ru-RU")}
-Группа: ${data.group_name}
+        `Ваш ID: ${data.student_id}\n` +
+        `Дата регистрации: ${new Date(data.registration_date).toLocaleDateString("ru-RU")}\n` +
+        `Группа: ${data.group_name}\n\n` +
 
-Количество топкоинов: ${coins}
-Количество топгемов:  ${gems}
-Количество топмани:  ${coins + gems}
+        `Количество топкоинов: ${coins}\n` +
+        `Количество топгемов:  ${gems}\n` +
+        `Количество топмани:  ${coins + gems}\n\n` +
 
-Это неофициальный бот. Он не связан с Компьютерной академией ТОР и разработан сторонними авторами.`
+        `Это неофициальный бот. Он не связан с Компьютерной академией ТОР и разработан сторонними авторами.`
 
     if (ctx.callbackQuery) {
         await ctx.editMessageText(text, { reply_markup: kb })

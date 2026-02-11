@@ -15,8 +15,7 @@ composer.callbackQuery(/^leaderboard\//, async (ctx) => {
     const header = "<b>🏆 Таблица лидеров 🏆</b>\n\n"
     const text =
         header +
-        data.slice(0, isGroupLeaderboard ? 12 : 10)
-            .map((entry, i) => `${i + 1}. ${entry.full_name} - ${entry.amount} топмани`)
+        data.map((entry, i) => `${i + 1}. ${entry.full_name} - ${entry.amount} топмани`)
             .join("\n");
     
     const kb = new InlineKeyboard()
