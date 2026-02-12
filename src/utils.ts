@@ -1,3 +1,5 @@
+import type { MyContext } from "./types.js";
+
 export function splitText(text: string, limit: number = 4096): string[] {
     const parts: string[] = [];
     let currentPart = "";
@@ -19,4 +21,10 @@ export function splitText(text: string, limit: number = 4096): string[] {
     }
 
     return parts;
+}
+
+export async function cancelHandler(ctx: MyContext) {
+    await ctx.conversation.exitAll()
+    await ctx.answerCallbackQuery()
+    await ctx.editMessageText("Отменено!")
 }
