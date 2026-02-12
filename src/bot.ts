@@ -10,6 +10,7 @@ import { userLoader } from "./middlewares.js";
 import { handlers } from "./handlers/index.js"; 
 import { auth } from "./handlers/auth.js";
 import { cancelHandler } from "./utils.js";
+import { upload_homework } from "./handlers/upload_homework.js";
 
 const bot = new Bot<MyContext, MyApi>(process.env.TOKEN!,);
 const throttler = apiThrottler();
@@ -25,6 +26,7 @@ bot.api.config.use(autoRetry());
 bot.api.config.use(throttler);
 
 bot.use(createConversation(auth, { plugins: [hydrate()]} ));
+bot.use(createConversation(upload_homework, { plugins: [hydrate()]} ));
 bot.on(["message:entities:bot_command", "callback_query"], userLoader);
 bot.command("relogin", async (ctx) => {await ctx.conversation.enter("auth", true)})
 bot.callbackQuery("cancel", cancelHandler)

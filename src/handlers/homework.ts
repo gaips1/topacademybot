@@ -42,8 +42,6 @@ composer.callbackQuery(/^homework\//, async (ctx) => {
                 if (hw.homework_stud.file_path != null) {
                     parts.push(`  📩 <a href="${hw.homework_stud.file_path}">Скачать выполненное дз</a>`);
                 }
-            } else {
-                parts.push(`  📩 <b>Загрузить выполненное дз — /homework</b>`);
             }
 
             if (hw.homework_comment?.text_comment) {
@@ -59,6 +57,7 @@ composer.callbackQuery(/^homework\//, async (ctx) => {
     const kb = new InlineKeyboard()
     if (page > 1) kb.text("Назад", `homework/${type}/${page-1}`)
     if ((counter - (page * 6)) > 0) kb.text("Вперёд", `homework/${type}/${page+1}`)
+    if (type === 3) kb.row().text("Загрузить выполненное ДЗ", `upload_homework/${page}`)
 
     kb.row().text(`Текущие дз ${type === 3 ? "(Вы здесь)" : ""}`, "homework/3/1")
     kb.row().text(`На проверке ${type === 2 ? "(Вы здесь)" : ""}`, "homework/2/1")
