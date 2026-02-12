@@ -4,13 +4,14 @@ import http from "node:http"
 import { autoRetry } from "@grammyjs/auto-retry";
 import { apiThrottler } from "@grammyjs/transformer-throttler";
 import { conversations, createConversation } from "@grammyjs/conversations";
+import { limit } from "@grammyjs/ratelimiter";
 
 import type { MyApi, MyContext, SessionData } from "./types.js";
 import { userLoader } from "./middlewares.js";
 import { handlers } from "./handlers/index.js"; 
 import { auth } from "./handlers/auth.js";
 import { cancelHandler } from "./utils.js";
-import { limit } from "@grammyjs/ratelimiter";
+import { upload_homework } from "./handlers/upload_homework.js";
 
 const bot = new Bot<MyContext, MyApi>(process.env.TOKEN!,);
 const throttler = apiThrottler();
@@ -38,6 +39,7 @@ bot.use(limit({onLimitExceeded: async (ctx) => {
 }, timeFrame: 1500, limit: 1}));
 
 bot.use(createConversation(auth, { plugins: [hydrate()]} ));
+bot.use(createConversation(upload_homework, { plugins: [hydrate()]} ));
 bot.on(["message:entities:bot_command", "callback_query"], userLoader);
 bot.command("relogin", async (ctx) => {await ctx.conversation.enter("auth", true)})
 bot.callbackQuery("cancel", cancelHandler)
