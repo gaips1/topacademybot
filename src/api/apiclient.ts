@@ -93,12 +93,14 @@ export class ApiClient {
         }
 
         const text = await response.text();
-        if (!text) {
+        const trimmedText = text.trim();
+        
+        if (!trimmedText) {
             return null as unknown as T;
         }
 
         try {
-            return JSON.parse(text) as T;
+            return JSON.parse(trimmedText) as T;
         } catch (e) {
             console.error(`Failed to parse JSON from ${endpoint}. Response text:`, text);
             throw e;
