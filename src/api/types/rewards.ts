@@ -31,5 +31,6 @@ export const ACHIEVEMENTS_TRANSLATIONS: Record<string, string> = {
   "5_VISITS_WITHOUT_DELAY": "5 посещений без опозданий",
   "5_VISITS_WITHOUT_GAP": "5 посещений без пропусков",
   "FILL_IN_PROFILE": "Заполнение профиля",
-  "EMAIL_CONFIRMATION": "Подтверждение почты"
+  "EMAIL_CONFIRMATION": "Подтверждение почты",
+  "AUTO_MARK_EXPIRED_HOMEWORK": "Не выполнение сроков сдачи домашнего задания"
 };

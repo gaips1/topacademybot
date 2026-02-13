@@ -13,10 +13,10 @@ composer.callbackQuery(/^leaderboard\//, async (ctx) => {
     }
 
     const header = "<b>🏆 Таблица лидеров 🏆</b>\n\n"
-    const text =
-        header +
-        data.map((entry, i) => `${i + 1}. ${entry.full_name} - ${entry.amount} топмани`)
-            .join("\n");
+    const text = header + data
+        .filter(entry => entry.full_name != null)
+        .map((entry, i) => `${i + 1}. ${entry.full_name} - ${entry.amount} топмани`)
+        .join("\n");
     
     const kb = new InlineKeyboard()
         .text(
