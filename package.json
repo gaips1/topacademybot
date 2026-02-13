@@ -10,6 +10,7 @@
     "@grammyjs/auto-retry": "^2.0.2",
     "@grammyjs/conversations": "^2.1.1",
     "@grammyjs/hydrate": "^1.6.0",
+    "@grammyjs/ratelimiter": "^1.2.1",
     "@grammyjs/transformer-throttler": "^1.2.1",
     "drizzle-orm": "^0.45.1",
     "grammy": "^1.39.3",

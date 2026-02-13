@@ -10,6 +10,7 @@ import { userLoader } from "./middlewares.js";
 import { handlers } from "./handlers/index.js"; 
 import { auth } from "./handlers/auth.js";
 import { cancelHandler } from "./utils.js";
+import { limit } from "@grammyjs/ratelimiter";
 
 const bot = new Bot<MyContext, MyApi>(process.env.TOKEN!,);
 const throttler = apiThrottler();
@@ -23,6 +24,13 @@ bot.use(conversations());
 bot.api.config.use(hydrateApi());
 bot.api.config.use(autoRetry());
 bot.api.config.use(throttler);
+bot.use(limit({onLimitExceeded: async (ctx) => {
+  if (ctx.callbackQuery) {
+    await ctx.answerCallbackQuery({ text: "Тише будь", show_alert: true })
+  } else {
+    await ctx.reply("Тише будь")
+  }
+}, timeFrame: 1500, limit: 1}));
 
 bot.use(createConversation(auth, { plugins: [hydrate()]} ));
 bot.on(["message:entities:bot_command", "callback_query"], userLoader);
