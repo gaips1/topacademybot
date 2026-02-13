@@ -30,10 +30,19 @@ bot.command("relogin", async (ctx) => {await ctx.conversation.enter("auth", true
 bot.callbackQuery("cancel", cancelHandler)
 bot.use(handlers);
 
+bot.catch((err) => {
+  console.error('Bot error:', err);
+});
+
 if (process.env.NODE_ENV === 'prod') {
   const server = http.createServer(webhookCallback(bot, 'http'));
-  server.listen(4000);
-  } else {
+  server.on('error', (error) => {
+    console.error('Server error:', error);
+  });
+  server.listen(4000, () => {
+    console.log('Webhook server listening on port 4000');
+  });
+} else {
   bot.start(); 
 }
 console.log("Запущено!")

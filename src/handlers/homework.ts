@@ -25,7 +25,7 @@ composer.callbackQuery(/^homework\//, async (ctx) => {
             parts.push(`  👨‍🏫 <b>Преподаватель:</b> ${hw.fio_teach}`);
             parts.push(`  📅 <b>Выдано:</b> ${new Date(hw.creation_time).toLocaleDateString("ru-RU")}`);
             parts.push(`  📅 <b>Срок:</b> ${new Date(hw.completion_time).toLocaleDateString("ru-RU")}`);
-            parts.push(`  ℹ️ <b>Комментарий:</b> ${hw.comment ?? "нет"}`);
+            parts.push(`  ℹ️ <b>Комментарий:</b> ${hw.comment || "нет"}`);
             parts.push(`  📩 <a href="${hw.file_path}">Скачать назначенное дз</a>`);
 
             if (hw.homework_stud) {
