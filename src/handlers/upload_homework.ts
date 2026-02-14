@@ -97,9 +97,21 @@ export async function upload_homework(
             maxMilliseconds: 300_000 
         })
         comment = msg.text.toLowerCase() === "пропустить" ? null : msg.text.trim()
+        await ctx.reply(
+            "Отправьте документ (не .txt и не .csv), фото, или видео с выполненной домашней работой:",
+            { reply_markup: cancelKb, reply_parameters: { message_id: msg.message_id }}
+        )
     } catch {
         return await ctx.editMessageText("Превышено время ожидания.")
     }
 
-    // TODO отправка файла и интеграция с API
+    try {
+        while (true) {
+            const { msg } = await conversation.waitFor([":document" , ":photo", ":video"], { 
+                maxMilliseconds: 300_000, otherwise: ctx => ctx.reply("Отправьте документ (не .txt и не .csv), фото, или видео:")
+            })
+        }
+    } catch {
+        return await ctx.editMessageText("Превышено время ожидания.")
+    }
 }
