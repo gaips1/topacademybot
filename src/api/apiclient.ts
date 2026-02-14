@@ -6,7 +6,8 @@ import type {
     ActivityList, 
     HomeworkList, 
     HomeworkCounterList, 
-    EvaluationList, 
+    EvaluationList,
+    CreatedHomework, 
 } from "./types/index.js";
 
 type TokenUpdateCallback = (newToken: string) => Promise<void> | void;
@@ -71,15 +72,20 @@ export class ApiClient {
             await this.login();
         }
 
+        const headers: Record<string, string> = {
+            ...(options.headers as Record<string, string>),
+            'Authorization': `Bearer ${this.token}`,
+            'Accept': "application/json, text/plain, */*",
+            "Referer": "https://journal.top-academy.ru/"
+        };
+
+        if (!(options.body instanceof FormData)) {
+            headers['Content-Type'] = 'application/json';
+        }
+
         const sendRequest = () => fetch(`${this.baseUrl}${endpoint}`, {
             ...options,
-            headers: {
-                ...options.headers,
-                'Authorization': `Bearer ${this.token}`,
-                'Accept': "application/json, text/plain, */*",
-                'Content-Type': 'application/json',
-                "Referer": "https://journal.top-academy.ru/"
-            }
+            headers: headers
         });
 
         let response = await sendRequest();
@@ -104,7 +110,6 @@ export class ApiClient {
             throw e;
         }
     }
-
 
     async getUserData(): Promise<UserData | null> {
         try {
@@ -197,6 +202,36 @@ export class ApiClient {
         } catch (e) {
             console.error(e);
             return false;
+        }
+    }
+
+    async createHomework(
+        homeworkId: number | string,
+        file: File | Blob, 
+        spentHour: number,
+        spentMin: number,
+        answerText: string = ""
+    ): Promise<CreatedHomework | null> {
+        try {
+            const formData = new FormData();
+            
+            formData.append("id", String(homeworkId));
+            formData.append("file", file); 
+            formData.append("answerText", answerText);
+            
+            const fmtHour = String(spentHour).padStart(2, '0');
+            const fmtMin = String(spentMin).padStart(2, '0');
+            
+            formData.append("spentTimeHour", fmtHour);
+            formData.append("spentTimeMin", fmtMin);
+
+            return await this.request<CreatedHomework>("homework/operations/create", {
+                method: "POST",
+                body: formData
+            });
+        } catch (e) {
+            console.error("Failed to create homework:", e);
+            return null;
         }
     }
 }

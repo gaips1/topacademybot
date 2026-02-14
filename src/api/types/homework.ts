@@ -42,5 +42,16 @@ export interface HomeworkCounter {
   counter: number;
 }
 
+export interface CreatedHomework {
+  id: number,
+  filename: string | null,
+  file_path: string,
+  tmp_file: string | null,
+  mark: number | null,
+  creation_time: string,
+  stud_answer: string | null,
+  auto_mark: boolean
+}
+
 export type HomeworkCounterList = HomeworkCounter[];
 export type HomeworkList = Homework[];
