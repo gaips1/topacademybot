@@ -44,7 +44,8 @@ export class ApiClient {
                 });
 
                 if (!response.ok) {
-                    throw new Error(`Login failed with status: ${response.status}`);
+                    const text = await response.text()
+                    throw new Error(`Login failed with status: ${response.status}, text: ${text}`);
                 }
 
                 const data: AuthResponse = await response.json();
