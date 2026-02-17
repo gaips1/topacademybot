@@ -16,6 +16,23 @@ composer.callbackQuery(/^homework\//, async (ctx) => {
         return await ctx.answerCallbackQuery({ text: "Произошла ошибка, попробуйте позже.", show_alert: true })
     }
 
+    const counter = counters.find(item => item.counter_type === type)!.counter;
+    const kb = new InlineKeyboard()
+    if (page > 1) kb.text("Назад", `homework/${type}/${page-1}`)
+    if ((counter - (page * 6)) > 0) kb.text("Вперёд", `homework/${type}/${page+1}`)
+
+    kb.row().text(`Текущие дз ${type === 3 ? "(Вы здесь)" : ""}`, "homework/3/1")
+    kb.row().text(`На проверке ${type === 2 ? "(Вы здесь)" : ""}`, "homework/2/1")
+    kb.row().text(`Проверено ${type === 1 ? "(Вы здесь)" : ""}`, "homework/1/1")
+    kb.row().text(`Просрочено ${type === 0 ? "(Вы здесь)" : ""}`, "homework/0/1")
+
+    kb.row().text("Главное меню", "mm")
+
+    if (homeworks.length === 0) {
+        await ctx.answerCallbackQuery()
+        return await ctx.editMessageText("В данный момент выбранных домашних заданий нет.", { reply_markup: kb });
+    }
+
     const text = homeworks
         .map((hw) => {
             const parts = [];
@@ -42,8 +59,6 @@ composer.callbackQuery(/^homework\//, async (ctx) => {
                 if (hw.homework_stud.file_path != null) {
                     parts.push(`  📩 <a href="${hw.homework_stud.file_path}">Скачать выполненное дз</a>`);
                 }
-            } else {
-                parts.push(`  📩 <b>Загрузить выполненное дз — /homework</b>`);
             }
 
             if (hw.homework_comment?.text_comment) {
@@ -52,20 +67,8 @@ composer.callbackQuery(/^homework\//, async (ctx) => {
 
             return parts.join("\n");
         })
-        .join("\n\n");
+        .join("\n\n")
 
-    const counter = counters.find(item => item.counter_type === type)!.counter;
-
-    const kb = new InlineKeyboard()
-    if (page > 1) kb.text("Назад", `homework/${type}/${page-1}`)
-    if ((counter - (page * 6)) > 0) kb.text("Вперёд", `homework/${type}/${page+1}`)
-
-    kb.row().text(`Текущие дз ${type === 3 ? "(Вы здесь)" : ""}`, "homework/3/1")
-    kb.row().text(`На проверке ${type === 2 ? "(Вы здесь)" : ""}`, "homework/2/1")
-    kb.row().text(`Проверено ${type === 1 ? "(Вы здесь)" : ""}`, "homework/1/1")
-
-    kb.row().text("Главное меню", "mm")
-    
     const textParts = splitText(text, 4096);
     await ctx.answerCallbackQuery();
 

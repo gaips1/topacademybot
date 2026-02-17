@@ -5,7 +5,6 @@ import { clientsCache } from "../middlewares.js";
 import type { MyContext, MyConversationContext } from "../types.js";
 import { start_command_handler } from "./start.js";
 import { setTimeout } from 'timers/promises';
-import { except } from "drizzle-orm/gel-core";
 
 export async function auth(conversation: Conversation<MyContext, MyConversationContext>, ctx: MyContext, update: boolean = false) {
     await ctx.reply(

@@ -18,7 +18,7 @@ composer.callbackQuery(/^rewards\//, async (ctx) => {
             .map(
                 (entry) => 
                 `${new Date(entry.date).toLocaleString('ru-RU')}\n` +
-                `${ACHIEVEMENTS_TRANSLATIONS[entry.achievements_name]}: +${entry.current_point} ` +
+                `${ACHIEVEMENTS_TRANSLATIONS[entry.achievements_name] || "Неизвестно"}: +${entry.current_point} ` +
                 `${POINT_TYPES_TRANSLATIONS[entry.point_types_name]}\n`
             )
                 .join("----------------------------\n")

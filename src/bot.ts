@@ -15,6 +15,10 @@ import { limit } from "@grammyjs/ratelimiter";
 const bot = new Bot<MyContext, MyApi>(process.env.TOKEN!,);
 const throttler = apiThrottler();
 
+bot.catch((err) => {
+  console.error('Bot error:', err);
+});
+
 function initial(): SessionData {
   return { evaluations: [], evaluateCooldown: 0 };
 }
@@ -24,6 +28,7 @@ bot.use(conversations());
 bot.api.config.use(hydrateApi());
 bot.api.config.use(autoRetry());
 bot.api.config.use(throttler);
+
 bot.use(limit({onLimitExceeded: async (ctx) => {
   if (ctx.callbackQuery) {
     await ctx.answerCallbackQuery({ text: "Тише будь", show_alert: true })
@@ -38,10 +43,6 @@ bot.command("relogin", async (ctx) => {await ctx.conversation.enter("auth", true
 bot.callbackQuery("cancel", cancelHandler)
 bot.use(handlers);
 
-bot.catch((err) => {
-  console.error('Bot error:', err);
-});
-
 if (process.env.NODE_ENV === 'prod') {
   const server = http.createServer(webhookCallback(bot, 'http'));
   server.on('error', (error) => {
@@ -53,4 +54,5 @@ if (process.env.NODE_ENV === 'prod') {
 } else {
   bot.start(); 
 }
+
 console.log("Запущено!")
