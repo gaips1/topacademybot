@@ -45,7 +45,7 @@ export interface HomeworkCounter {
 export interface CreatedHomework {
   id: number,
   filename: string | null,
-  file_path: string,
+  file_path: string | null,
   tmp_file: string | null,
   mark: number | null,
   creation_time: string,

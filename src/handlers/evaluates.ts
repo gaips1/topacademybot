@@ -1,9 +1,9 @@
 import { Composer, InlineKeyboard } from "grammy";
-import type { MyContext } from "../types.js";
+import type { MyContext, MyConversationContext } from "../types.js";
 
 export const composer = new Composer<MyContext>();
 
-export async function checkEvaluates(ctx: MyContext) {
+export async function checkEvaluates(ctx: MyConversationContext) {
     let evaluations = ctx.session.evaluations
     if (evaluations.length === 0) {
         const data = await ctx.ApiClient.getLessonEvaluations()

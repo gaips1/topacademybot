@@ -207,17 +207,27 @@ export class ApiClient {
 
     async createHomework(
         homeworkId: number | string,
-        file: File | Blob, 
+        fileBuffer: Buffer | null = null,
+        filename: string | null = null,
         spentHour: number,
         spentMin: number,
-        answerText: string = ""
+        answerText: string | null = ""
     ): Promise<CreatedHomework | null> {
         try {
             const formData = new FormData();
             
             formData.append("id", String(homeworkId));
-            formData.append("file", file); 
-            formData.append("answerText", answerText);
+
+            if (fileBuffer && filename) {
+                const uint8Array = new Uint8Array(fileBuffer); 
+                const blob = new Blob([uint8Array], { 
+                    type: "application/octet-stream" 
+                });
+                formData.append("file", blob, filename);
+                console.log(`📤 Отправляем файл: ${filename} (${(fileBuffer.length / 1024).toFixed(2)} KB)`);
+            }
+
+            formData.append("answerText", answerText || "");
             
             const fmtHour = String(spentHour).padStart(2, '0');
             const fmtMin = String(spentMin).padStart(2, '0');
@@ -231,6 +241,36 @@ export class ApiClient {
             });
         } catch (e) {
             console.error("Failed to create homework:", e);
+            return null;
+        }
+    }
+
+    async saveHomeworkEvaluation(
+        id: number,
+        idDomZad: number,
+        idStud: number,
+        mark: number,
+        comment: string = "",
+        tags: number[] = []
+    ): Promise<{id: number, id_dom_zad: number, id_stud: number, mark: number, comment: string, tags: number[]} | null> {
+        try {
+            const formData = new FormData();
+            const evaluationData = {
+                id,
+                idDomZad,
+                idStud,
+                mark,
+                comment,
+                tags
+            };
+            formData.append("EvaluationHomeworkForm", JSON.stringify(evaluationData));
+
+            return await this.request<{id: number, id_dom_zad: number, id_stud: number, mark: number, comment: string, tags: number[]}>("homework/evaluation/operations/save", {
+                method: "POST",
+                body: formData
+            });
+        } catch (e) {
+            console.error("Failed to save homework evaluation:", e);
             return null;
         }
     }

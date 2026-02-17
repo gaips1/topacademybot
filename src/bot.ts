@@ -25,11 +25,11 @@ bot.api.config.use(hydrateApi());
 bot.api.config.use(autoRetry());
 bot.api.config.use(throttler);
 
+bot.callbackQuery("cancel", cancelHandler)
 bot.use(createConversation(auth, { plugins: [hydrate()]} ));
-bot.use(createConversation(upload_homework, { plugins: [hydrate()]} ));
+bot.use(createConversation(upload_homework, { plugins: [hydrate(), userLoader]} ));
 bot.on(["message:entities:bot_command", "callback_query"], userLoader);
 bot.command("relogin", async (ctx) => {await ctx.conversation.enter("auth", true)})
-bot.callbackQuery("cancel", cancelHandler)
 bot.use(handlers);
 
 if (process.env.NODE_ENV === 'prod') {
