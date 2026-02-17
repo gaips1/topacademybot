@@ -24,13 +24,13 @@ composer.callbackQuery(/^rewards\//, async (ctx) => {
                 .join("----------------------------\n")
 
     const kb = new InlineKeyboard()
-        .text("Вперёд", `rewards/${page+1}`)
 
     if (page > 0) {
-        kb.row().text("Назад", `rewards/${page-1}`)
+        kb.text("Назад", `rewards/${page-1}`).style("danger")
     }
-
-    kb.row().text("Главное меню", "mm")
+    kb.text("Вперёд", `rewards/${page+1}`).style("success")
+    
+    kb.row().text("Главное меню", "mm").style("primary")
 
     await ctx.answerCallbackQuery()
     await ctx.editMessageText(text, { reply_markup: kb, parse_mode: "HTML" })

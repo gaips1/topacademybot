@@ -22,9 +22,9 @@ composer.callbackQuery(/^leaderboard\//, async (ctx) => {
         .text(
             isGroupLeaderboard ? "Таблица лидеров (в потоке)" : "Таблица лидеров (в группе)",
             isGroupLeaderboard ? "leaderboard/stream" : "leaderboard/group"
-        )
+        ).style(isGroupLeaderboard ? "danger" : "success")
         .row()
-        .text("Главное меню", "mm")
+        .text("Главное меню", "mm").style("primary")
 
     await ctx.answerCallbackQuery()
     await ctx.editMessageText(text, { reply_markup: kb, parse_mode: "HTML" })

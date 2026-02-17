@@ -5,12 +5,16 @@ export const composer = new Composer<MyContext>();
 
 const kb = new InlineKeyboard()
     .text("Домашние задания", "homework/3/1")
+    .style("primary")
     .row()
     .text("Посещаемость/оценки", "activity/0")
+    .style("primary")
     .row()
     .text("Таблица лидеров", "leaderboard/stream")
+    .style("primary")
     .row()
     .text("Ваши награды", "rewards/0")
+    .style("primary")
 
 export const start_command_handler = async (ctx: MyContext) => {
     const data = await ctx.ApiClient.getUserData();

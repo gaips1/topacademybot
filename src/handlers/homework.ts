@@ -18,15 +18,15 @@ composer.callbackQuery(/^homework\//, async (ctx) => {
 
     const counter = counters.find(item => item.counter_type === type)!.counter;
     const kb = new InlineKeyboard()
-    if (page > 1) kb.text("Назад", `homework/${type}/${page-1}`)
-    if ((counter - (page * 6)) > 0) kb.text("Вперёд", `homework/${type}/${page+1}`)
+    if (page > 1) kb.text("Назад", `homework/${type}/${page-1}`).style("danger")
+    if ((counter - (page * 6)) > 0) kb.text("Вперёд", `homework/${type}/${page+1}`).style("success")
 
-    kb.row().text(`Текущие дз ${type === 3 ? "(Вы здесь)" : ""}`, "homework/3/1")
-    kb.row().text(`На проверке ${type === 2 ? "(Вы здесь)" : ""}`, "homework/2/1")
-    kb.row().text(`Проверено ${type === 1 ? "(Вы здесь)" : ""}`, "homework/1/1")
-    kb.row().text(`Просрочено ${type === 0 ? "(Вы здесь)" : ""}`, "homework/0/1")
+    kb.row().text(`Текущие дз ${type === 3 ? "(Вы здесь)" : ""}`, "homework/3/1").style(type === 3 ? "success" : "primary")
+    kb.row().text(`На проверке ${type === 2 ? "(Вы здесь)" : ""}`, "homework/2/1").style(type === 2 ? "success" : "primary")
+    kb.row().text(`Проверено ${type === 1 ? "(Вы здесь)" : ""}`, "homework/1/1").style(type === 1 ? "success" : "primary")
+    kb.row().text(`Просрочено ${type === 0 ? "(Вы здесь)" : ""}`, "homework/0/1").style(type === 0 ? "success" : "primary")
 
-    kb.row().text("Главное меню", "mm")
+    kb.row().text("Главное меню", "mm").style("danger")
 
     if (homeworks.length === 0) {
         await ctx.answerCallbackQuery()

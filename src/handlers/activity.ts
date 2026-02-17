@@ -61,9 +61,9 @@ composer.callbackQuery(/^activity\//, async (ctx) => {
     const fullText = `<b>🗓️ Учебная неделя ${fmt(start)} - ${fmt(end)}</b>\n` + 
                      (content || "\n<i>В эту неделю пар не было</i>");
 
-    const kb = new InlineKeyboard().text("Вперёд", `activity/${page + 1}`);
-    if (page > 0) kb.row().text("Назад", `activity/${page - 1}`);
-    kb.row().text("Главное меню", "mm");
+    const kb = new InlineKeyboard().text("Вперёд", `activity/${page + 1}`).style("success")
+    if (page > 0) kb.row().text("Назад", `activity/${page - 1}`).style("danger")
+    kb.row().text("Главное меню", "mm").style("primary")
 
     const textParts = splitText(fullText, 4096);
     await ctx.answerCallbackQuery();
