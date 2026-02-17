@@ -20,6 +20,7 @@ composer.callbackQuery(/^homework\//, async (ctx) => {
     const kb = new InlineKeyboard()
     if (page > 1) kb.text("Назад", `homework/${type}/${page-1}`).style("danger")
     if ((counter - (page * 6)) > 0) kb.text("Вперёд", `homework/${type}/${page+1}`).style("success")
+    if (type === 3 || type === 0) kb.row().text("Загрузить выполненное ДЗ", `upload_homework/${type}/${page}`)
 
     kb.row().text(`Текущие дз ${type === 3 ? "(Вы здесь)" : ""}`, "homework/3/1").style(type === 3 ? "success" : "primary")
     kb.row().text(`На проверке ${type === 2 ? "(Вы здесь)" : ""}`, "homework/2/1").style(type === 2 ? "success" : "primary")

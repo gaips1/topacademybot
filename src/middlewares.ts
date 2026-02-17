@@ -1,5 +1,5 @@
 import type { NextFunction } from "grammy";
-import type { MyContext } from "./types.js";
+import type { MyConversationContext, MyContext } from "./types.js";
 import { getUser, updateUserAccessToken } from "./db/services/users.service.js";
 import { ApiClient } from "./api/apiclient.js";
 import { LRUCache } from "lru-cache";
@@ -14,15 +14,22 @@ export const clientsCache = new LRUCache<number, ApiClient>({
     updateAgeOnHas: false
 });
 
-export async function userLoader(ctx: MyContext, next: NextFunction) {
-    const userId = ctx.from!.id;
+export async function userLoader(ctx: MyConversationContext, next: NextFunction) {
+    if (!ctx.from) {
+        return await next();
+    }
+    
+    const userId = ctx.from.id;
     let client = clientsCache.get(userId);
 
     if (!client) {
         const data = await getUser(userId);
 
         if (!data) {
-            await ctx.conversation.enter("auth");
+            if ("conversation" in ctx) {
+                const fullCtx = ctx as MyContext;
+                await fullCtx.conversation.enter("auth");
+            }
             return
         }
 
@@ -34,17 +41,19 @@ export async function userLoader(ctx: MyContext, next: NextFunction) {
         );
         clientsCache.set(userId, client);
     }
+    
     ctx.ApiClient = client;
 
-    if (!ctx.callbackQuery?.data?.startsWith("evaluates/")) {
+    if ("conversation" in ctx && !ctx.callbackQuery?.data?.startsWith("evaluates/")) {
+        const fullCtx = ctx as MyContext;
         const now = Date.now();
-        const lastCheck = ctx.session.evaluateCooldown;
+        const lastCheck = fullCtx.session.evaluateCooldown;
         if (now - lastCheck < 300_000) {
             await next();
             return;
         }
-        ctx.session.evaluateCooldown = now;
-        await checkEvaluates(ctx)
+        fullCtx.session.evaluateCooldown = now;
+        await checkEvaluates(fullCtx)
     }
     
     await next();
