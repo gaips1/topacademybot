@@ -44,15 +44,46 @@ bot.callbackQuery("cancel", cancelHandler)
 bot.use(handlers);
 
 if (process.env.NODE_ENV === 'prod') {
-  const server = http.createServer(webhookCallback(bot, 'http'));
-  server.on('error', (error) => {
-    console.error('Server error:', error);
+  const handleUpdate = webhookCallback<MyContext, "http">(bot, "http");
+
+  const server = http.createServer((req, res) => {
+    if (req.method === "GET" && (req.url === "/" || req.url === "/health")) {
+      res.writeHead(200, { "Content-Type": "text/plain" });
+      res.end("OK");
+      return;
+    }
+
+    if (req.method !== "POST") {
+      res.writeHead(405, { "Content-Type": "text/plain" });
+      res.end("Method Not Allowed");
+      return;
+    }
+
+    const contentType = req.headers["content-type"];
+    if (!contentType || !contentType.includes("application/json")) {
+      res.writeHead(400, { "Content-Type": "text/plain" });
+      res.end("Bad Content-Type");
+      return;
+    }
+
+    handleUpdate(req, res).catch((err) => {
+      console.error("Webhook handler error:", err);
+      if (!res.headersSent) {
+        res.writeHead(500);
+        res.end("Internal Server Error");
+      }
+    });
   });
-  server.listen(4000, () => {
-    console.log('Webhook server listening on port 4000');
+
+  server.on("error", (error) => {
+    console.error("Server error:", error);
+  });
+
+  server.listen(4000, "127.0.0.1", () => {
+    console.log(`Webhook server listening on port 4000`);
   });
 } else {
-  bot.start(); 
+  bot.start();
 }
 
 console.log("Запущено!")
