@@ -1,16 +1,18 @@
-import type { 
-    AuthResponse, 
-    UserData, 
-    StudentRatingList, 
-    RewardsHistory, 
-    ActivityList, 
-    HomeworkList, 
-    HomeworkCounterList, 
+import type {
+    AuthResponse,
+    UserData,
+    StudentRatingList,
+    RewardsHistory,
+    ActivityList,
+    HomeworkList,
+    HomeworkCounterList,
     EvaluationList,
-    CreatedHomework, 
+    CreatedHomework,
 } from "./types/index.js";
 
-type TokenUpdateCallback = (newToken: string) => Promise<void> | void;
+type TokenUpdateCallback = (newToken: string) => Promise<void> | void
+
+const DEBUG = process.env.API_DEBUG === "*"
 
 export class ApiClient {
     private token: string | null = null;
@@ -89,25 +91,32 @@ export class ApiClient {
             headers: headers
         });
 
+        if (DEBUG) {
+            console.log("[API DEBUG] Request options:", options)
+        }
+
         let response = await sendRequest();
         if (response.status === 401) {
             await this.login();
             response = await sendRequest();
         }
 
+        const text = await response.text()
+        if (DEBUG) {
+            console.log("[API DEBUG] Response text:", text)
+            console.log("[API DEBUG] Response:", response)
+        }
+
         if (!response.ok) {
             throw new Error(`Request to ${endpoint} failed with status: ${response.status}`);
         }
 
-        const text = await response.text();
-        const trimmedText = text.trim();
-        
-        if (!trimmedText) {
+        if (!text) {
             return null as unknown as T;
         }
 
         try {
-            return JSON.parse(trimmedText) as T;
+            return JSON.parse(text) as T;
         } catch (e) {
             console.error(`Failed to parse JSON from ${endpoint}. Response text:`, text);
             throw e;
@@ -214,8 +223,12 @@ export class ApiClient {
         filename: string | null = null,
         spentHour: number,
         spentMin: number,
-        answerText: string | null = ""
+        mark: number,
+        answerText: string | null = "",
     ): Promise<CreatedHomework | null> {
+        if (DEBUG) {
+            console.log("[API DEBUG] Creating homework with fileBuffer:", fileBuffer)
+        }
         try {
             const formData = new FormData();
             
@@ -227,7 +240,6 @@ export class ApiClient {
                     type: "application/octet-stream" 
                 });
                 formData.append("file", blob, filename);
-                console.log(`📤 Отправляем файл: ${filename} (${(fileBuffer.length / 1024).toFixed(2)} KB)`);
             }
 
             formData.append("answerText", answerText || "");
@@ -238,10 +250,12 @@ export class ApiClient {
             formData.append("spentTimeHour", fmtHour);
             formData.append("spentTimeMin", fmtMin);
 
-            return await this.request<CreatedHomework>("homework/operations/create", {
+            const ans = await this.request<CreatedHomework>("homework/operations/create", {
                 method: "POST",
                 body: formData
             });
+            await this.saveHomeworkEvaluation(Number(homeworkId), mark)
+            return ans
         } catch (e) {
             console.error("Failed to create homework:", e);
             return null;
@@ -249,10 +263,10 @@ export class ApiClient {
     }
 
     async saveHomeworkEvaluation(
-        id: number,
         idDomZad: number,
-        idStud: number,
         mark: number,
+        id: number | null = null,
+        idStud: number | null = null,
         comment: string = "",
         tags: number[] = []
     ): Promise<{id: number, id_dom_zad: number, id_stud: number, mark: number, comment: string, tags: number[]} | null> {

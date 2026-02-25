@@ -1,8 +1,7 @@
-import { Composer, InlineKeyboard } from "grammy";
-import type { MyConversation, MyConversationContext, MyContext } from "../types.js";
-import { File } from "node:buffer"
+import { Composer, InlineKeyboard } from "grammy"
+import type { MyConversation, MyConversationContext, MyContext } from "../types.js"
 
-export const composer = new Composer<MyContext>();
+export const composer = new Composer<MyContext>()
 const cancelKb = new InlineKeyboard().text("Отменить", "cancel")
 
 composer.callbackQuery(/^upload_homework\//, async (ctx) => {
@@ -21,7 +20,7 @@ composer.callbackQuery(/^upload_homework\//, async (ctx) => {
             .text("Отменить", "cancel")
 
         await ctx.answerCallbackQuery()
-        return await ctx.editMessageText("Оцените, насколько знания, полученные на уроке, были достаточными для выполнения ДЗ:", { reply_markup: kb });
+        return await ctx.editMessageText("Оцените, насколько знания, полученные на уроке, были достаточными для выполнения ДЗ:", { reply_markup: kb })
     
     } else if (homework_id !== null && homework_evaluate !== null) {
         await ctx.answerCallbackQuery()
@@ -42,7 +41,7 @@ composer.callbackQuery(/^upload_homework\//, async (ctx) => {
     })
     kb.text("Назад к списку дз", `homework/${type}/1`)
 
-    await ctx.answerCallbackQuery();
+    await ctx.answerCallbackQuery()
     await ctx.editMessageReplyMarkup({ reply_markup: kb })
 })
 
@@ -90,14 +89,23 @@ export async function upload_homework(
 
     let comment: string | null
     try {
-        const { msg } = await conversation.waitFor("message:text", { 
-            maxMilliseconds: 300_000 
-        })
-        comment = msg.text.toLowerCase() === "пропустить" ? null : msg.text.trim()
-        await ctx.reply(
-            `Отправьте файл с выполненной домашней работой.\nРекомендуется загружать файлы в архиве. Файлы в формате .тхт и .csv не допускаются. ${comment === null ? "" : "\n\n(или <code>пропустить</code>, чтобы пропустить этот этап)"}`,
-            { reply_markup: cancelKb, parse_mode: "HTML", reply_parameters: { message_id: msg.message_id }}
-        )
+        while (true) {
+           const { msg } = await conversation.waitFor("message:text", { 
+                maxMilliseconds: 300_000 
+            })
+
+            if (msg.text.length < 5) {
+                await ctx.reply("Минимум 5 символов. Отправьте ваш текстовый ответ (или <code>пропустить</code>, чтобы пропустить этот этап):")
+                continue
+            }
+        
+            comment = msg.text.toLowerCase() === "пропустить" ? null : msg.text.trim()
+            await ctx.reply(
+                `Отправьте файл с выполненной домашней работой.\nРекомендуется загружать файлы в архиве. Файлы в формате .тхт и .csv не допускаются. ${comment === null ? "" : "\n\n(или <code>пропустить</code>, чтобы пропустить этот этап)"}`,
+                { reply_markup: cancelKb, parse_mode: "HTML", reply_parameters: { message_id: msg.message_id }}
+            )
+            break
+        }
     } catch {
         return await ctx.reply("Превышено время ожидания.")
     }
@@ -112,7 +120,7 @@ export async function upload_homework(
             })
 
             if (msg?.text?.toLowerCase() === "пропустить" && comment !== null) {
-                await ctx.ApiClient.createHomework(homework_id, null, null, hours, minutes, comment)
+                await conversation.external(() => ctx.ApiClient.createHomework(homework_id, null, null, hours, minutes, homework_evaluate, comment))
                 await ctx.reply("Домашнее задание успешно отправлено!")
                 return
 
@@ -126,51 +134,62 @@ export async function upload_homework(
                 continue
             }
 
-            let fileId: string;
-            let mimeType: string;
+            let fileId: string
+            let mimeType: string
 
             if (msg.document) {
-                fileId = msg.document.file_id;
-                filename = msg.document.file_name || `document_${Date.now()}`;
-                mimeType = msg.document.mime_type || "application/octet-stream";
+                fileId = msg.document.file_id
+                filename = msg.document.file_name || `document_${Date.now()}`
+                mimeType = msg.document.mime_type || "application/octet-stream"
             } else if (msg.photo?.length) {
-                fileId = msg.photo[msg.photo.length - 1]!.file_id;
-                filename = `photo_${Date.now()}.jpg`;
-                mimeType = "image/jpeg";
+                fileId = msg.photo[msg.photo.length - 1]!.file_id
+                filename = `photo_${Date.now()}.jpg`
+                mimeType = "image/jpeg"
             } else if (msg.video) {
-                fileId = msg.video.file_id;
-                filename = msg.video.file_name || `video_${Date.now()}.mp4`;
-                mimeType = msg.video.mime_type || "video/mp4";
+                fileId = msg.video.file_id
+                filename = msg.video.file_name || `video_${Date.now()}.mp4`
+                mimeType = msg.video.mime_type || "video/mp4"
             } else {
-                await ctx.reply("Пожалуйста, отправьте файл, фото или видео.");
+                await ctx.reply("Пожалуйста, отправьте файл, фото или видео.")
+                continue
+            }
+
+            await ctx.reply("Скачиваю и отправляю файл...", { reply_parameters: { message_id: msg.message_id } })
+
+            fileBuffer = await conversation.external(async () => {
+                try {
+                    const fileInfo = await ctx.api.getFile(fileId);
+                    const url = `https://api.telegram.org/file/bot${process.env.TOKEN}/${fileInfo.file_path}`;
+                    const res = await fetch(url);
+
+                    if (!res.ok) return null;
+
+                    const ab = await res.arrayBuffer();
+                    return Buffer.from(ab);
+                } catch {
+                    return null;
+                }
+            });
+
+            if (!fileBuffer) {
+                await ctx.reply("Не удалось скачать файл. Попробуйте ещё раз.");
                 continue;
             }
 
-            await ctx.reply("Скачиваю и отправляю файл...", { reply_parameters: { message_id: msg.message_id } });
-  
-            const fileInfo = await ctx.api.getFile(fileId);
-            const downloadUrl = `https://api.telegram.org/file/bot${process.env.TOKEN!}/${fileInfo.file_path}`;
-            const res = await fetch(downloadUrl);
-
-            if (!res.ok) {
-                await ctx.reply("Ошибка при скачивании файла. Попробуйте снова.");
-                continue;
-            }
-
-            const arrayBuffer = await res.arrayBuffer();
-            fileBuffer = Buffer.from(arrayBuffer);
             break
         }
     } catch {
         return await ctx.reply("Превышено время ожидания.")
     }
 
-    const data = await ctx.ApiClient.createHomework(homework_id, fileBuffer, filename, hours, minutes, comment)
+    const data = await conversation.external(() =>
+        ctx.ApiClient.createHomework(homework_id, fileBuffer, filename, hours, minutes, homework_evaluate, comment)
+    )
     if (data) {
-        await ctx.reply("Домашнее задание успешно отправлено!")
+        await ctx.reply("Домашнее задание успешно отправлено на проверку!", {
+            reply_markup: new InlineKeyboard().text("Назад к списку ДЗ", "homework/3/1")
+        })
     } else {
         await ctx.reply("Произошла ошибка при отправке домашнего задания. Попробуйте позже.")
     }
-
-    // TODO запихни все вызовы апишки в external + save, айдишник туда берется из какого то гета.
 }
