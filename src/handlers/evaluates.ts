@@ -51,12 +51,12 @@ composer.callbackQuery(/^evaluates\//, async (ctx) => {
         await ctx.editMessageText(`${header}\n\nТеперь оцените качество урока:`, { reply_markup: kb })
 
     } else {
+        ctx.session.evaluations.shift()
+        
         const ok = await ctx.ApiClient.evaluateLesson(key!, Number(evl1), Number(evl2))
         if (!ok) {
             return await ctx.editMessageText("Произошла серверная ошибка при отправке оценки! Попробуйте позже.")
         }
-
-        ctx.session.evaluations.shift();
 
         await ctx.editMessageText("Спасибо за ваши оценки!")
         return await checkEvaluates(ctx)
