@@ -101,14 +101,19 @@ export class ApiClient {
             response = await sendRequest();
         }
 
+        if (!response.ok) {
+            const text = await response.text()
+            if (DEBUG) {
+                console.log("[API DEBUG] Response text:", text)
+                console.log("[API DEBUG] Response:", response)
+            }
+            throw new Error(`Request to ${endpoint} failed with status: ${response.status}`);
+        }
+
         const text = await response.text()
         if (DEBUG) {
             console.log("[API DEBUG] Response text:", text)
             console.log("[API DEBUG] Response:", response)
-        }
-
-        if (!response.ok) {
-            throw new Error(`Request to ${endpoint} failed with status: ${response.status}`);
         }
 
         if (!text) {
