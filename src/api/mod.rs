@@ -33,7 +33,7 @@ impl types::User {
         let resp = REQWEST_CLIENT
             .post(format!("{}/auth/login", BASE_URL))
             .header("Content-Type", "application/json")
-            .header("Referer", "https://journal.top-academy.ru/")
+            .header("Referer", "https://journal.top-academy.ru")
             .json(&json!({
                 "application_key": "6a56a5df2667e65aab73ce76d1dd737f7d1faef9c52e8b8c55ac75f565d8e8a6",
                 "id_city": null,
@@ -102,6 +102,15 @@ impl types::User {
         &self,
         endpoint: &str,
     ) -> Result<T, crate::error::ApiError> {
-        todo!() // get запрос по эндпоинту
+        let request_builder = REQWEST_CLIENT.get(endpoint)
+            .header("Accept", "application/json, text/plain, */*")
+            .header("Referer", "https://journal.top-academy.ru")
+            .header("Content-Type", "application/json");
+
+        self.request_with_options::<T>(request_builder).await
+    }
+
+    pub async fn get<T: types::Endpoint>(&self) -> Result<T, ApiError> {
+        self.request(&format!("{BASE_URL}{}", T::PATH)).await
     }
 }
