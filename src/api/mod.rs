@@ -9,7 +9,7 @@ use std::{
 };
 use tokio::sync::Mutex;
 
-mod types;
+pub mod types;
 
 const BASE_URL: &str = "https://msapi.top-academy.ru/api/v2";
 
@@ -29,7 +29,7 @@ impl types::User {
         guard.clone()
     }
 
-    async fn login(&self) -> Result<String, crate::error::ApiError> {
+    async fn login(&self) -> Result<String, ApiError> {
         let resp = REQWEST_CLIENT
             .post(format!("{}/auth/login", BASE_URL))
             .header("Content-Type", "application/json")
@@ -75,7 +75,7 @@ impl types::User {
     pub async fn request_with_options<T: DeserializeOwned>(
         &self,
         request_builder: reqwest::RequestBuilder,
-    ) -> Result<T, crate::error::ApiError> {
+    ) -> Result<T, ApiError> {
         let token = match self.cached_token().await {
             Some(t) => t,
             None => self.refresh_token(None).await?,
@@ -90,7 +90,7 @@ impl types::User {
                 resp = retry.bearer_auth(&new_token).send().await?;
 
                 if resp.status() == StatusCode::UNAUTHORIZED {
-                    return Err(crate::error::ApiError::FailedLogin);
+                    return Err(ApiError::FailedLogin);
                 }
             }
         }
@@ -98,11 +98,9 @@ impl types::User {
         Ok(resp.error_for_status()?.json::<T>().await?)
     }
 
-    pub async fn request<T: DeserializeOwned>(
-        &self,
-        endpoint: &str,
-    ) -> Result<T, crate::error::ApiError> {
-        let request_builder = REQWEST_CLIENT.get(endpoint)
+    pub async fn request<T: types::Endpoint>(&self) -> Result<T, ApiError> {
+        let request_builder = REQWEST_CLIENT
+            .get(format!("{BASE_URL}{}", T::PATH))
             .header("Accept", "application/json, text/plain, */*")
             .header("Referer", "https://journal.top-academy.ru")
             .header("Content-Type", "application/json");
@@ -110,7 +108,14 @@ impl types::User {
         self.request_with_options::<T>(request_builder).await
     }
 
-    pub async fn get<T: types::Endpoint>(&self) -> Result<T, ApiError> {
-        self.request(&format!("{BASE_URL}{}", T::PATH)).await
+    pub async fn get(pool: &sqlx::PgPool, id: i64) -> Option<Self> {
+        sqlx::query_as!(
+            Self,
+            r#"SELECT username, password FROM users WHERE id = $1;"#,
+            id
+        )
+        .fetch_one(pool)
+        .await
+        .ok()
     }
 }

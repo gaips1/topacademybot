@@ -7,4 +7,18 @@ pub struct StudentRating {
     pub amount: Option<i64>,
 }
 
-pub type StudentRatingList = Vec<StudentRating>;
+#[derive(serde::Deserialize)]
+#[serde(transparent)]
+pub struct StudentRatingListGroup(pub Vec<StudentRating>);
+
+#[derive(serde::Deserialize)]
+#[serde(transparent)]
+pub struct StudentRatingListStream(pub Vec<StudentRating>);
+
+impl super::Endpoint for StudentRatingListGroup {
+    const PATH: &'static str = "/dashboard/progress/leader-group";
+}
+
+impl super::Endpoint for StudentRatingListStream {
+    const PATH: &'static str = "/dashboard/progress/leader-stream";
+}

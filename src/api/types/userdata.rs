@@ -62,5 +62,5 @@ pub struct UserData {
 }
 
 impl super::Endpoint for UserData {
-    const PATH: &'static str = "";
+    const PATH: &'static str = "/settings/user-info";
 }

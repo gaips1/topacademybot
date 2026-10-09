@@ -16,14 +16,14 @@ pub struct AuthResponse {
 
 // --------------------------------------------
 
-mod userdata;
-mod rewards;
-mod leaderboard;
 mod activity;
 mod homework;
+mod leaderboard;
+mod rewards;
+mod userdata;
 
-pub use userdata::*;
-pub use rewards::*;
-pub use leaderboard::*;
 pub use activity::*;
 pub use homework::*;
+pub use leaderboard::*;
+pub use rewards::*;
+pub use userdata::*;

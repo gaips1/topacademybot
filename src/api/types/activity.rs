@@ -16,6 +16,10 @@ pub struct Activity {
 
 pub type ActivityList = Vec<Activity>;
 
+impl super::Endpoint for ActivityList {
+    const PATH: &'static str = "/progress/operations/student-visits";
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, serde::Serialize, serde::Deserialize)]
 #[repr(i32)]
 pub enum StatusWas {

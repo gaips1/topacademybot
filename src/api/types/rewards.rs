@@ -1,5 +1,5 @@
 #[derive(serde::Deserialize)]
-pub struct RewardRecord {
+pub struct Reward {
     pub date: String,
     pub action: i32,
     pub current_point: i64,
@@ -12,7 +12,11 @@ pub struct RewardRecord {
     pub old_competition: bool,
 }
 
-pub type RewardsHistory = Vec<RewardRecord>;
+pub type RewardsHistory = Vec<Reward>;
+
+impl super::Endpoint for RewardsHistory {
+    const PATH: &'static str = "/dashboard/progress/activity";
+}
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, serde::Serialize, serde::Deserialize)]
 pub enum PointType {
