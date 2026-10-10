@@ -8,7 +8,6 @@ pub struct Group {
 
 #[derive(serde::Deserialize)]
 pub struct GamingPoint {
-    pub new_gaming_point_types_id: i64,
     pub points: i64,
 }
 

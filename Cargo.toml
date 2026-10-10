@@ -16,3 +16,4 @@ serde = "1.0.229"
 sqlx = { version = "0.8", features = [ "runtime-tokio", "postgres" ] }
 thiserror = "2.0.21"
 dashmap = "6.2.1"
+chrono = { version = "0.4", features = ["serde"] }
