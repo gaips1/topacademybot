@@ -1,8 +1,10 @@
-use teloxide::prelude::*;
+use teloxide::{dispatching::dialogue::InMemStorage, prelude::*};
 
 pub mod api;
 pub mod bot;
 pub mod error;
+
+pub use api::types;
 
 #[tokio::main]
 async fn main() {
@@ -25,7 +27,10 @@ async fn main() {
     let bot = Bot::from_env();
 
     Dispatcher::builder(bot, bot::handler())
-        .dependencies(dptree::deps![pool])
+        .dependencies(dptree::deps![
+            pool,
+            InMemStorage::<bot::types::State>::new()
+        ])
         .enable_ctrlc_handler()
         .build()
         .dispatch()

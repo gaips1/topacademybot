@@ -1,14 +1,21 @@
-use teloxide::prelude::*;
+use teloxide::{macros::BotCommands, prelude::*};
+
+#[derive(BotCommands, Clone)]
+#[command(rename_rule = "lowercase")]
+pub enum Command {
+    Start,
+    Relogin,
+}
 
 pub async fn on_command(
     bot: Bot,
     msg: Message,
     pool: sqlx::PgPool,
-    cmd: super::Command,
+    cmd: Command,
 ) -> super::types::HandlerResult {
     match cmd {
-        super::Command::Start => start_command(bot, msg, pool).await?,
-        super::Command::Relogin => {}
+        Command::Start => start_command(bot, msg, pool).await?,
+        Command::Relogin => {}
     }
     Ok(())
 }
