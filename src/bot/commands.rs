@@ -1,5 +1,5 @@
-use teloxide::{macros::BotCommands, prelude::*};
 use crate::types::*;
+use teloxide::{macros::BotCommands, prelude::*, types::MessageId};
 
 #[derive(BotCommands, Clone)]
 #[command(rename_rule = "lowercase")]
@@ -12,21 +12,30 @@ pub async fn on_command(
     bot: Bot,
     msg: Message,
     cmd: Command,
-    user: User
+    user: User,
+    dialogue: super::types::MyDialogue,
 ) -> super::types::HandlerResult {
     match cmd {
-        Command::Start => start_command(bot, msg, user).await?,
-        Command::Relogin => {}
+        Command::Start => start_command(bot, msg.chat.id, msg.id, user, false).await?,
+        Command::Relogin => relogin_command(bot, msg, dialogue).await?,
     }
     Ok(())
 }
 
 pub async fn start_command(
     bot: Bot,
-    msg: Message,
-    user: User
+    chat_id: ChatId,
+    msg_id: MessageId,
+    user: User,
+    edit: bool,
 ) -> super::types::HandlerResult {
-    let data: UserData = user.request().await?;
+    let data = match user.request::<UserData>().await {
+        Ok(data) => data,
+        Err(err) => {
+            let _ = bot.send_message(chat_id, err.user_message()).await;
+            return Ok(());
+        }
+    };
 
     let coins = data.gaming_points[0].points;
     let gems = data.gaming_points[1].points;
@@ -43,11 +52,42 @@ pub async fn start_command(
         Количество топмани: {}\n\n\
         \
         Это неофициальный бот. Он не связан с Компьютерной академией ТОР и разработан сторонними авторами.",
-        data.full_name, data.student_id,
+        data.full_name,
+        data.student_id,
         data.registration_date,
-        data.group_name, coins + gems
+        data.group_name,
+        coins + gems
     );
 
-    bot.send_message(msg.chat.id, text).reply_markup(super::keyboards::main_menu_kb()).await?;
+    if edit {
+        bot.edit_message_text(chat_id, msg_id, text)
+            .reply_markup(super::keyboards::main_menu_kb())
+            .await?;
+    } else {
+        bot.send_message(chat_id, text)
+            .reply_markup(super::keyboards::main_menu_kb())
+            .await?;
+    }
+
+    Ok(())
+}
+
+pub async fn relogin_command(
+    bot: Bot,
+    msg: Message,
+    dialogue: super::types::MyDialogue,
+) -> super::types::HandlerResult {
+    bot.send_message(
+        msg.chat.id,
+        "Введите ваш логин и пароль от Top Academy в формате: <code>логин пароль</code>.",
+    )
+    .parse_mode(teloxide::types::ParseMode::Html)
+    .reply_markup(super::keyboards::cancel_kb())
+    .await?;
+
+    dialogue
+        .update(super::types::State::ReceiveCredentials)
+        .await?;
+
     Ok(())
 }

@@ -12,9 +12,9 @@ pub mod types;
 #[rustfmt::skip]
 pub fn handler() -> UpdateHandler<types::HandlerError> {
     dptree::entry()
+        .enter_dialogue::<Update, InMemStorage<types::State>, types::State>()
         .branch(
             Update::filter_message()
-                .enter_dialogue::<Message, InMemStorage<types::State>, types::State>()
                 .branch(
                     dptree::case![types::State::ReceiveCredentials]
                         .endpoint(auth::auth)
@@ -22,8 +22,8 @@ pub fn handler() -> UpdateHandler<types::HandlerError> {
         )
         .branch(
             Update::filter_callback_query()
-                .enter_dialogue::<CallbackQuery, InMemStorage<types::State>, types::State>()
-                .endpoint(callbacks::callback_handler)
+                .filter(|q: CallbackQuery| q.data.as_deref() == Some("cancel"))
+                .endpoint(callbacks::cancel::cancel_callback_handler)
         )
         .branch(
             dptree::entry()
@@ -34,6 +34,10 @@ pub fn handler() -> UpdateHandler<types::HandlerError> {
                             .filter_command::<commands::Command>()
                             .endpoint(commands::on_command),
                     ),
+                )
+                .branch(
+                    Update::filter_callback_query()
+                        .endpoint(callbacks::callback_handler)
                 )
         )
 }

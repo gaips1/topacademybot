@@ -1,8 +1,8 @@
 use crate::types::*;
 use anyhow::Context;
-use tokio::time::sleep;
 use std::{sync::Arc, time::Duration};
 use teloxide::{dispatching::dialogue::InMemStorage, prelude::*, types::MessageId};
+use tokio::time::sleep;
 
 pub async fn check_user(
     bot: Bot,
@@ -41,7 +41,8 @@ pub async fn auth(
     let parts: Vec<&str> = msg.text().unwrap_or("").split_whitespace().collect();
 
     if let [login, password] = parts[..] {
-            let user = match crate::types::User::new(&pool, user_id, login.to_string(), password.to_string())
+        let user =
+            match crate::types::User::new(&pool, user_id, login.to_string(), password.to_string())
                 .await
             {
                 Ok(u) => u,
@@ -85,9 +86,9 @@ pub async fn auth(
             "Вы успешно авторизованы! Перехожу в главное меню...",
         )
         .await?;
-        
+
         sleep(Duration::from_secs(2)).await;
-        super::commands::start_command(bot, msg, user).await?;
+        super::commands::start_command(bot, msg.chat.id, msg.id, user, false).await?;
     } else {
         bot.send_message(
             msg.chat.id,

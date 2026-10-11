@@ -1,59 +1,33 @@
-#[derive(serde::Deserialize)]
+#[derive(Debug, Clone, serde::Deserialize)]
 pub struct Reward {
     pub date: String,
     pub action: i32,
     pub current_point: i64,
     pub point_types_id: i64,
-    pub point_types_name: String,
+    pub point_types_name: PointType,
     pub achievements_id: i64,
-    pub achievements_name: String,
+    pub achievements_name: Achievement,
     pub achievements_type: i32,
     pub badge: i32,
     pub old_competition: bool,
 }
 
-pub type RewardsHistory = Vec<Reward>;
-
-impl super::Endpoint for RewardsHistory {
-    const PATH: &'static str = "/dashboard/progress/activity";
-}
-
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, serde::Serialize, serde::Deserialize)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum PointType {
-    #[serde(rename = "DIAMOND")]
     Diamond,
-    #[serde(rename = "COIN")]
     Coin,
-}
-
-impl PointType {
-    pub fn translation(&self) -> &'static str {
-        match self {
-            PointType::Diamond => "Топкоины",
-            PointType::Coin => "Топгемы",
-        }
-    }
-
-    pub fn from_code(code: &str) -> Option<Self> {
-        match code {
-            "DIAMOND" => Some(PointType::Diamond),
-            "COIN" => Some(PointType::Coin),
-            _ => None,
-        }
-    }
+    #[serde(other)]
+    Unknown,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, serde::Serialize, serde::Deserialize)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum Achievement {
-    #[serde(rename = "EVALUATION_LESSON_MARK")]
     EvaluationLessonMark,
-    #[serde(rename = "PAIR_VISIT")]
     PairVisit,
-    #[serde(rename = "WORK_IN_CLASS")]
     WorkInClass,
-    #[serde(rename = "ASSESMENT")]
     Assesment,
-    #[serde(rename = "HOMETASK_INTIME")]
     HometaskIntime,
     #[serde(rename = "20_VISITS_WITHOUT_DELAY")]
     Visits20WithoutDelay,
@@ -67,16 +41,14 @@ pub enum Achievement {
     Visits5WithoutDelay,
     #[serde(rename = "5_VISITS_WITHOUT_GAP")]
     Visits5WithoutGap,
-    #[serde(rename = "FILL_IN_PROFILE")]
     FillInProfile,
-    #[serde(rename = "EMAIL_CONFIRMATION")]
     EmailConfirmation,
-    #[serde(rename = "AUTO_MARK_EXPIRED_HOMEWORK")]
     AutoMarkExpiredHomework,
-    #[serde(rename = "SURVEY")]
+    IntimeLaboratoryWork,
     Survey,
+    #[serde(other)]
+    Unknown,
 }
-
 impl Achievement {
     pub fn translation(&self) -> &'static str {
         match self {
@@ -95,27 +67,24 @@ impl Achievement {
             Achievement::EmailConfirmation => "Подтверждение почты",
             Achievement::AutoMarkExpiredHomework => "Не выполнение сроков сдачи домашнего задания",
             Achievement::Survey => "Участие в опросе",
+            Achievement::IntimeLaboratoryWork => "Своевременное выполнение лабораторной работы",
+            Achievement::Unknown => "Неизвестно",
         }
     }
+}
 
-    pub fn from_code(code: &str) -> Option<Self> {
-        match code {
-            "EVALUATION_LESSON_MARK" => Some(Achievement::EvaluationLessonMark),
-            "PAIR_VISIT" => Some(Achievement::PairVisit),
-            "WORK_IN_CLASS" => Some(Achievement::WorkInClass),
-            "ASSESMENT" => Some(Achievement::Assesment),
-            "HOMETASK_INTIME" => Some(Achievement::HometaskIntime),
-            "20_VISITS_WITHOUT_DELAY" => Some(Achievement::Visits20WithoutDelay),
-            "20_VISITS_WITHOUT_GAP" => Some(Achievement::Visits20WithoutGap),
-            "10_VISITS_WITHOUT_DELAY" => Some(Achievement::Visits10WithoutDelay),
-            "10_VISITS_WITHOUT_GAP" => Some(Achievement::Visits10WithoutGap),
-            "5_VISITS_WITHOUT_DELAY" => Some(Achievement::Visits5WithoutDelay),
-            "5_VISITS_WITHOUT_GAP" => Some(Achievement::Visits5WithoutGap),
-            "FILL_IN_PROFILE" => Some(Achievement::FillInProfile),
-            "EMAIL_CONFIRMATION" => Some(Achievement::EmailConfirmation),
-            "AUTO_MARK_EXPIRED_HOMEWORK" => Some(Achievement::AutoMarkExpiredHomework),
-            "SURVEY" => Some(Achievement::Survey),
-            _ => None,
+impl PointType {
+    pub fn translation(&self) -> &'static str {
+        match self {
+            PointType::Diamond => "Топкоины",
+            PointType::Coin => "Топгемы",
+            PointType::Unknown => "Неизвестно",
         }
     }
+}
+
+pub type RewardsHistory = Vec<Reward>;
+
+impl super::Endpoint for RewardsHistory {
+    const PATH: &'static str = "/dashboard/progress/activity";
 }

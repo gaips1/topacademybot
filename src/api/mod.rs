@@ -133,7 +133,11 @@ impl types::User {
         };
 
         sqlx::query!(
-            "INSERT INTO users (id, username, password) VALUES ($1, $2, $3);",
+            "INSERT INTO users (id, username, password) \
+            VALUES ($1, $2, $3) \
+            ON CONFLICT (id) DO UPDATE \
+            SET username = EXCLUDED.username, \
+                password = EXCLUDED.password;",
             user_id,
             &user.username,
             &user.password
