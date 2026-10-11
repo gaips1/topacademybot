@@ -67,6 +67,8 @@ pub async fn rewards_callback_handlers(
         )?
     }
 
+    let _ = bot.answer_callback_query(q.id).await;
+
     bot.edit_message_text(msg.chat().id, msg.id(), text)
         .parse_mode(teloxide::types::ParseMode::Html)
         .reply_markup(kb(page))
