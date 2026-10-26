@@ -6,6 +6,8 @@ use teloxide::{
 mod auth;
 pub mod callbacks;
 mod commands;
+pub mod ext;
+pub mod helpers;
 pub mod keyboards;
 pub mod types;
 

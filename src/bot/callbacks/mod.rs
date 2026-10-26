@@ -2,6 +2,7 @@ use crate::bot::types;
 use anyhow::Context;
 use teloxide::prelude::*;
 
+mod activity;
 pub mod cancel;
 mod leaderboard;
 mod rewards;
@@ -20,6 +21,7 @@ pub async fn callback_handler(
         "cancel" => cancel::cancel_callback_handler(bot, q, dialogue).await?,
         "rewards" => rewards::rewards_callback_handlers(bot, q, user).await?,
         "leaderboard" => leaderboard::leaderboard_callback_handlers(bot, q, user).await?,
+        "activity" => activity::activity_callback_handlers(bot, q, user).await?,
         "mm" => {
             crate::bot::commands::start_command(bot, msg.chat().id, msg.id(), user, true).await?
         }

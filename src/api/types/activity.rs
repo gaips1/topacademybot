@@ -1,9 +1,8 @@
 #[derive(serde::Deserialize)]
 pub struct Activity {
     pub date_visit: String,
-    pub lesson_number: i32,
-    pub status_was: i32,
-    pub spec_id: i64,
+    pub lesson_number: Option<i32>,
+    pub status_was: Option<i32>,
     pub teacher_name: String,
     pub spec_name: String,
     pub lesson_theme: String,
@@ -14,45 +13,19 @@ pub struct Activity {
     pub practical_work_mark: Option<i64>,
 }
 
+impl Activity {
+    pub fn status_was(&self) -> &'static str {
+        match self.status_was {
+            Some(0) => "Отсутствовал",
+            Some(1) => "Присутствовал",
+            Some(2) => "Опоздал",
+            _ => "Неизвестно",
+        }
+    }
+}
+
 pub type ActivityList = Vec<Activity>;
 
 impl super::Endpoint for ActivityList {
     const PATH: &'static str = "/progress/operations/student-visits";
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, serde::Serialize, serde::Deserialize)]
-#[repr(i32)]
-pub enum StatusWas {
-    Absent = 0,
-    Present = 1,
-    Late = 2,
-}
-
-impl StatusWas {
-    pub fn translation(&self) -> &'static str {
-        match self {
-            StatusWas::Absent => "Отсутствовал",
-            StatusWas::Present => "Присутствовал",
-            StatusWas::Late => "Опоздал",
-        }
-    }
-
-    pub fn from_code(code: i32) -> Option<Self> {
-        match code {
-            0 => Some(StatusWas::Absent),
-            1 => Some(StatusWas::Present),
-            2 => Some(StatusWas::Late),
-            _ => None,
-        }
-    }
-
-    pub fn from_field(field: &Activity) -> Option<Self> {
-        Self::from_code(field.status_was)
-    }
-}
-
-impl From<StatusWas> for i32 {
-    fn from(s: StatusWas) -> i32 {
-        s as i32
-    }
 }

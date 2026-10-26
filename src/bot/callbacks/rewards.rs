@@ -1,4 +1,4 @@
-use crate::types::*;
+use crate::{bot::ext::DateTimeFormatExt, types::*};
 use anyhow::Context;
 use chrono::NaiveDateTime;
 use std::fmt::Write;
@@ -52,14 +52,11 @@ pub async fn rewards_callback_handlers(
 
     let mut text = "<b>🏆 Ваши награды 🏆</b>\n\n".to_string();
     for r in data.iter().skip(page * 10).take(10) {
-        let date = NaiveDateTime::parse_from_str(&r.date, "%Y-%m-%d %H:%M:%S")
-            .unwrap_or_else(|_| chrono::Local::now().naive_local());
-
         write!(
             &mut text,
             "<b>{}</b>\n{}: {}{} {}\n\
             ---------------------------------------\n",
-            date.format("%d.%m.%Y %H:%M"),
+            NaiveDateTime::from_rus(&r.date).to_rus(),
             r.achievements_name.translation(),
             if r.action == 1 { '+' } else { '-' },
             r.current_point,

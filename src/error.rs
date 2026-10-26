@@ -16,11 +16,11 @@ impl ApiError {
     pub fn user_message(&self) -> &'static str {
         match self {
             ApiError::Network(err) => {
-                log::error!("{}", err);
+                log::error!("{:#?}", err);
                 "Сервис сейчас недоступен. Попробуйте чуть позже."
             }
             ApiError::Database(err) => {
-                log::error!("{}", err);
+                log::error!("{:#?}", err);
                 "Внутренняя ошибка. Мы уже разбираемся."
             }
             ApiError::FailedLogin => {
