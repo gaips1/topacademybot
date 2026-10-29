@@ -1,6 +1,8 @@
 use anyhow::Context;
 use teloxide::{
-    payloads::{EditMessageTextSetters, SendMessageSetters}, requests::Requester, types::{ChatId, MessageId},
+    payloads::{EditMessageTextSetters, SendMessageSetters},
+    requests::Requester,
+    types::{ChatId, MessageId},
 };
 
 pub fn split_text(text: &str) -> Vec<String> {
@@ -24,10 +26,12 @@ pub fn split_text(text: &str) -> Vec<String> {
                 parts.push(std::mem::take(&mut current));
                 len = 0;
             }
+
             if !current.is_empty() {
                 current.push('\n');
                 len += 1;
             }
+
             current.push_str(&chunk);
             len += n;
         }
@@ -36,26 +40,6 @@ pub fn split_text(text: &str) -> Vec<String> {
     if !current.is_empty() {
         parts.push(current);
     }
+
     parts
-}
-
-pub async fn send_split_text(
-    bot: teloxide::Bot,
-    msg_chat_id: ChatId,
-    msg_id: MessageId,
-    text: &str,
-) -> super::types::HandlerResult {
-    let splitted = split_text(text);
-
-    bot.edit_message_text(msg_chat_id, msg_id, splitted.first().context("нет текста")?)
-        .parse_mode(teloxide::types::ParseMode::Html)
-        .await?;
-
-    for i in 1..splitted.len() {
-        bot.send_message(msg_chat_id, splitted.get(i).unwrap())
-            .parse_mode(teloxide::types::ParseMode::Html)
-            .await?;
-    }
-
-    Ok(())
 }

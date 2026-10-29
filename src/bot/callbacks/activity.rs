@@ -1,4 +1,6 @@
-use crate::{bot::{ext::DateTimeFormatExt, helpers::send_split_text}, types::*};
+use crate::{
+    bot::{ext::DateTimeFormatExt, helpers::split_text}, types::*,
+};
 use anyhow::Context;
 use chrono::{Datelike, Duration, NaiveDateTime, NaiveTime};
 use std::fmt::Write;
@@ -38,14 +40,17 @@ pub async fn activity_callback_handlers(
 
     let mut week: Vec<_> = data
         .iter()
-        .filter(|a| {
+        .filter_map(|a| {
             let d = NaiveDateTime::from_rus(&a.date_visit);
-            d >= start && d < end
+            if d >= start && d < end {
+                Some((d, a))
+            } else {
+                None
+            }
         })
         .collect();
 
-    week.sort_by_key(|a| (NaiveDateTime::from_rus(&a.date_visit), a.lesson_number));
-    week.dedup_by_key(|a| (NaiveDateTime::from_rus(&a.date_visit), a.lesson_number, a.spec_name.clone()));
+    week.sort_by_key(|a| (a.0, a.1.lesson_number));
 
     let mut text = format!(
         "<b>🗓️ Учебная неделя {} - {}</b>\n\n",
@@ -53,46 +58,80 @@ pub async fn activity_callback_handlers(
         (end - Duration::days(1)).to_rus_date()
     );
 
-    for a in week {
-        let marks: Vec<String> = vec![
-            a.control_work_mark,
-            a.home_work_mark,
-            a.lab_work_mark,
-            a.class_work_mark,
-            a.practical_work_mark,
-        ]
-        .into_iter()
-        .filter_map(|m| Some(m?.to_string()))
-        .collect();
-
-        let theme: String = a.lesson_theme.chars().take(50).collect();
-        let ellipsis = if a.lesson_theme.chars().count() > 50 {
-            "..."
+    for activities in week.chunk_by(|a, b| a.0.date() == b.0.date()) {
+        if let Some((first, _)) = activities.first() {
+            let _ = write!(
+                &mut text,
+                "<b><u>{}</u></b>\n",
+                first.to_rus_date()
+            );
         } else {
-            ""
-        };
+            let _ = bot.answer_callback_query(q.id).await;
+            bot.send_message(msg.chat().id, "Вы не учились")
+                // todo: add buttons
+                .await?;
+            return Ok(());
+        }
+        
+        for (_, a) in activities {
+            let marks: Vec<String> = vec![
+                a.control_work_mark,
+                a.home_work_mark,
+                a.lab_work_mark,
+                a.class_work_mark,
+                a.practical_work_mark,
+            ]
+            .into_iter()
+            .filter_map(|m| Some(m?.to_string()))
+            .collect();
 
-        let _ = write!(
-            &mut text,
-            "🎓 <b>{}</b>\n\
-            - <b>Пара:</b> {}\n\
-            - <b>Посещение:</b> {}\n\
-            - <b>Преподаватель:</b> {}\n\
-            - <b>Тема:</b> {}{}\n\
-            - <b>Оценки:</b> {}\n\n",
-            a.spec_name,
-            a.lesson_number.unwrap_or(0),
-            a.status_was(),
-            a.teacher_name,
-            theme,
-            ellipsis,
-            if marks.len() == 0 { "Нет".to_string() } else { marks.join(", ") }
-        );
+            let theme: String = a.lesson_theme.chars().take(50).collect();
+            let ellipsis = if a.lesson_theme.chars().count() > 50 {
+                "..."
+            } else {
+                ""
+            };
+
+            let _ = write!(
+                &mut text,
+                concat!(
+                    "🎓 <b>{}</b>\n",
+                    "\u{2800}\u{2800}\u{2800}- <b>Пара:</b> {}\n",
+                    "\u{2800}\u{2800}\u{2800}- <b>Посещение:</b> {}\n",
+                    "\u{2800}\u{2800}\u{2800}- <b>Преподаватель:</b> {}\n",
+                    "\u{2800}\u{2800}\u{2800}- <b>Тема:</b> {}{}\n",
+                    "\u{2800}\u{2800}\u{2800}- <b>Оценки:</b> {}\n\n",
+                ),
+                a.spec_name,
+                a.lesson_number.unwrap_or(0),
+                a.status_was(),
+                a.teacher_name,
+                theme,
+                ellipsis,
+                if marks.is_empty() {
+                    "Нет".to_string()
+                } else {
+                    marks.join(", ")
+                }
+            );
+        }
     }
 
     let _ = bot.answer_callback_query(q.id).await;
 
-    send_split_text(bot, msg.chat().id, msg.id(), &text).await?;
+    let splitted = split_text(&text);
+
+    bot.edit_message_text(msg.chat().id, msg.id(), splitted.first().context("нет текста")?)
+        .parse_mode(teloxide::types::ParseMode::Html)
+        // todo: add buttons
+        .await?;
+
+    for i in 1..splitted.len() {
+        bot.send_message(msg.chat().id, splitted.get(i).context("нет текста")?)
+            .parse_mode(teloxide::types::ParseMode::Html)
+            // todo: add buttons
+            .await?;
+    }
 
     Ok(())
 }
