@@ -1,5 +1,5 @@
 use crate::{
-    bot::{ext::DateTimeFormatExt, helpers::split_text}, types::*,
+    bot::{ext::DateTimeFormatExt, helpers::send_split}, types::*,
 };
 use anyhow::Context;
 use chrono::{Datelike, Duration, NaiveDateTime, NaiveTime};
@@ -8,6 +8,25 @@ use teloxide::{
     prelude::*,
     types::{InlineKeyboardButton, InlineKeyboardMarkup},
 };
+
+fn kb(page: usize) -> InlineKeyboardMarkup {
+    let mut nav = Vec::with_capacity(2);
+    if page > 0 {
+        nav.push(InlineKeyboardButton::callback(
+            "Назад",
+            format!("activity/{}", page - 1),
+        ));
+    }
+    nav.push(InlineKeyboardButton::callback(
+        "Вперёд",
+        format!("activity/{}", page + 1),
+    ));
+
+    InlineKeyboardMarkup::new([
+        nav,
+        vec![InlineKeyboardButton::callback("В главное меню", "mm")],
+    ])
+}
 
 pub async fn activity_callback_handlers(
     bot: Bot,
@@ -20,7 +39,7 @@ pub async fn activity_callback_handlers(
         .unwrap()
         .split('/')
         .nth(1)
-        .context("нет страницы")?
+        .unwrap_or("0")
         .parse()?;
 
     let data = match user.request::<ActivityList>().await {
@@ -67,9 +86,11 @@ pub async fn activity_callback_handlers(
             );
         } else {
             let _ = bot.answer_callback_query(q.id).await;
-            bot.send_message(msg.chat().id, "Вы не учились")
-                // todo: add buttons
+
+            bot.send_message(msg.chat().id, "Вы не учились на этой неделе")
+                .reply_markup(kb(page))
                 .await?;
+
             return Ok(());
         }
         
@@ -96,11 +117,11 @@ pub async fn activity_callback_handlers(
                 &mut text,
                 concat!(
                     "🎓 <b>{}</b>\n",
-                    "\u{2800}\u{2800}\u{2800}- <b>Пара:</b> {}\n",
-                    "\u{2800}\u{2800}\u{2800}- <b>Посещение:</b> {}\n",
-                    "\u{2800}\u{2800}\u{2800}- <b>Преподаватель:</b> {}\n",
-                    "\u{2800}\u{2800}\u{2800}- <b>Тема:</b> {}{}\n",
-                    "\u{2800}\u{2800}\u{2800}- <b>Оценки:</b> {}\n\n",
+                    "\u{2800}\u{2800}- <b>Пара:</b> {}\n",
+                    "\u{2800}\u{2800}- <b>Посещение:</b> {}\n",
+                    "\u{2800}\u{2800}- <b>Преподаватель:</b> {}\n",
+                    "\u{2800}\u{2800}- <b>Тема:</b> {}{}\n",
+                    "\u{2800}\u{2800}- <b>Оценки:</b> {}\n\n",
                 ),
                 a.spec_name,
                 a.lesson_number.unwrap_or(0),
@@ -119,19 +140,7 @@ pub async fn activity_callback_handlers(
 
     let _ = bot.answer_callback_query(q.id).await;
 
-    let splitted = split_text(&text);
-
-    bot.edit_message_text(msg.chat().id, msg.id(), splitted.first().context("нет текста")?)
-        .parse_mode(teloxide::types::ParseMode::Html)
-        // todo: add buttons
-        .await?;
-
-    for i in 1..splitted.len() {
-        bot.send_message(msg.chat().id, splitted.get(i).context("нет текста")?)
-            .parse_mode(teloxide::types::ParseMode::Html)
-            // todo: add buttons
-            .await?;
-    }
+    send_split(&bot, msg.chat().id, msg.id(), &text, kb(page)).await?;
 
     Ok(())
 }

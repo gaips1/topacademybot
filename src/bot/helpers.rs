@@ -1,9 +1,5 @@
-use anyhow::Context;
-use teloxide::{
-    payloads::{EditMessageTextSetters, SendMessageSetters},
-    requests::Requester,
-    types::{ChatId, MessageId},
-};
+use anyhow::{ensure, Result};
+use teloxide::{Bot, payloads::{EditMessageTextSetters, SendMessageSetters}, requests::Requester, types::{ChatId, InlineKeyboardMarkup, MessageId, ParseMode}};
 
 pub fn split_text(text: &str) -> Vec<String> {
     let mut parts = Vec::new();
@@ -42,4 +38,40 @@ pub fn split_text(text: &str) -> Vec<String> {
     }
 
     parts
+}
+
+pub async fn send_split(
+    bot: &Bot,
+    chat_id: ChatId,
+    message_id: MessageId,
+    text: &str,
+    keyboard: InlineKeyboardMarkup,
+) -> Result<()> {
+    ensure!(!text.is_empty(), "нет текста");
+    let parts = split_text(text);
+
+    let last = parts.len() - 1;
+    let mut keyboard = Some(keyboard);
+
+    for (i, text) in parts.iter().enumerate() {
+        let markup = if i == last {
+            keyboard.take().unwrap_or_default()
+        } else {
+            InlineKeyboardMarkup::default()
+        };
+
+        if i == 0 {
+            bot.edit_message_text(chat_id, message_id, text)
+                .parse_mode(ParseMode::Html)
+                .reply_markup(markup)
+                .await?;
+        } else {
+            bot.send_message(chat_id, text)
+                .parse_mode(ParseMode::Html)
+                .reply_markup(markup)
+                .await?;
+        }
+    }
+
+    Ok(())
 }
