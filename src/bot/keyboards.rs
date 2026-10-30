@@ -12,7 +12,7 @@ pub fn main_menu_kb() -> InlineKeyboardMarkup {
     let rows = vec![
         vec![InlineKeyboardButton::callback(
             "Домашние задания",
-            "homework/3/1",
+            "homeworks/3/1",
         )],
         vec![InlineKeyboardButton::callback(
             "Посещаемость/оценки",

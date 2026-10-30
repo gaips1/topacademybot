@@ -5,10 +5,7 @@ use crate::{
 use anyhow::Context;
 use chrono::{Datelike, Duration, NaiveDateTime, NaiveTime};
 use std::fmt::Write;
-use teloxide::{
-    prelude::*,
-    types::{InlineKeyboardButton, InlineKeyboardMarkup},
-};
+use teloxide::types::{InlineKeyboardButton, InlineKeyboardMarkup};
 
 fn kb(page: usize) -> InlineKeyboardMarkup {
     let mut nav = Vec::with_capacity(2);
@@ -29,7 +26,7 @@ fn kb(page: usize) -> InlineKeyboardMarkup {
     ])
 }
 
-pub async fn activity_callback_handlers(
+pub async fn activity_callback_handler(
     bot: Bot,
     q: CallbackQuery,
     user: User,
@@ -40,9 +37,7 @@ pub async fn activity_callback_handlers(
     let data = match user.request::<ActivityList>().await {
         Ok(data) => data,
         Err(err) => {
-            let _ = bot
-                .edit_message_text(msg.chat().id, msg.id(), err.user_message())
-                .await;
+            let _ = bot.send_message(msg.chat().id, err.user_message()).await;
             return Ok(());
         }
     };
@@ -132,6 +127,5 @@ pub async fn activity_callback_handlers(
     let _ = bot.answer_callback_query(q.id).await;
 
     send_split(&bot, msg.chat().id, msg.id(), &text, kb(page)).await?;
-
     Ok(())
 }

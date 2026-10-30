@@ -11,7 +11,7 @@ use tokio::sync::Mutex;
 
 pub mod types;
 
-const BASE_URL: &str = "https://msapi.top-academy.ru/api/v2";
+pub const BASE_URL: &str = "https://msapi.top-academy.ru/api/v2";
 
 pub static REQWEST_CLIENT: LazyLock<reqwest::Client> = LazyLock::new(|| {
     reqwest::Client::builder()

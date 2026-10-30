@@ -1,10 +1,12 @@
 use anyhow::{Result, ensure};
+use std::time::Duration;
 use teloxide::{
     Bot,
     payloads::{EditMessageTextSetters, SendMessageSetters},
     requests::Requester,
     types::{ChatId, InlineKeyboardMarkup, MessageId, ParseMode},
 };
+use tokio::time::sleep;
 
 pub fn split_text(text: &str) -> Vec<String> {
     let mut parts = Vec::new();
@@ -75,6 +77,8 @@ pub async fn send_split(
                 .reply_markup(markup)
                 .await?;
         }
+
+        sleep(Duration::from_millis(300)).await;
     }
 
     Ok(())

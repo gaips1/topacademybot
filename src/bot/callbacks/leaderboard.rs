@@ -1,10 +1,7 @@
 use crate::types::*;
 use anyhow::Context;
 use std::fmt::Write;
-use teloxide::{
-    prelude::*,
-    types::{InlineKeyboardButton, InlineKeyboardMarkup},
-};
+use teloxide::types::{InlineKeyboardButton, InlineKeyboardMarkup};
 
 fn kb(is_group: bool) -> InlineKeyboardMarkup {
     let mut nav = Vec::with_capacity(1);
@@ -27,7 +24,7 @@ fn kb(is_group: bool) -> InlineKeyboardMarkup {
     ])
 }
 
-pub async fn leaderboard_callback_handlers(
+pub async fn leaderboard_callback_handler(
     bot: Bot,
     q: CallbackQuery,
     user: User,

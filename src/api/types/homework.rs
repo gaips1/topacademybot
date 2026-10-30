@@ -1,4 +1,4 @@
-#[derive(serde::Deserialize)]
+#[derive(serde::Deserialize, Debug)]
 pub struct HomeworkComment {
     pub text_comment: Option<String>,
     pub attachment: Option<String>,
@@ -6,7 +6,7 @@ pub struct HomeworkComment {
     pub date_updated: String,
 }
 
-#[derive(serde::Deserialize)]
+#[derive(serde::Deserialize, Debug)]
 pub struct HomeworkStud {
     pub id: i64,
     pub filename: Option<String>,
@@ -18,7 +18,7 @@ pub struct HomeworkStud {
     pub auto_mark: bool,
 }
 
-#[derive(serde::Deserialize)]
+#[derive(serde::Deserialize, Debug)]
 pub struct Homework {
     pub id: i64,
     pub id_spec: i64,
@@ -40,7 +40,7 @@ pub struct Homework {
     pub cover_image: Option<String>,
 }
 
-#[derive(serde::Deserialize)]
+#[derive(serde::Deserialize, Debug)]
 pub struct HomeworkCounter {
     pub counter_type: i32,
     pub counter: i64,
