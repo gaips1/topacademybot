@@ -3,8 +3,8 @@ pub struct StudentRating {
     pub id: Option<i64>,
     pub full_name: Option<String>,
     pub photo_path: Option<String>,
-    pub position: i64,
-    pub amount: i64,
+    pub position: u32,
+    pub amount: u64,
 }
 
 #[derive(serde::Deserialize)]

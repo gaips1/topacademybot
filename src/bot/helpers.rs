@@ -1,5 +1,10 @@
-use anyhow::{ensure, Result};
-use teloxide::{Bot, payloads::{EditMessageTextSetters, SendMessageSetters}, requests::Requester, types::{ChatId, InlineKeyboardMarkup, MessageId, ParseMode}};
+use anyhow::{Result, ensure};
+use teloxide::{
+    Bot,
+    payloads::{EditMessageTextSetters, SendMessageSetters},
+    requests::Requester,
+    types::{ChatId, InlineKeyboardMarkup, MessageId, ParseMode},
+};
 
 pub fn split_text(text: &str) -> Vec<String> {
     let mut parts = Vec::new();
@@ -48,13 +53,12 @@ pub async fn send_split(
     keyboard: InlineKeyboardMarkup,
 ) -> Result<()> {
     ensure!(!text.is_empty(), "нет текста");
-    let parts = split_text(text);
 
-    let last = parts.len() - 1;
+    let parts = split_text(text);
     let mut keyboard = Some(keyboard);
 
     for (i, text) in parts.iter().enumerate() {
-        let markup = if i == last {
+        let markup = if i == parts.len() - 1 {
             keyboard.take().unwrap_or_default()
         } else {
             InlineKeyboardMarkup::default()

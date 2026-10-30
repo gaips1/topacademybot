@@ -1,5 +1,6 @@
 use crate::{
-    bot::{ext::DateTimeFormatExt, helpers::send_split}, types::*,
+    bot::{ext::DateTimeFormatExt, helpers::send_split},
+    types::*,
 };
 use anyhow::Context;
 use chrono::{Datelike, Duration, NaiveDateTime, NaiveTime};
@@ -34,13 +35,7 @@ pub async fn activity_callback_handlers(
     user: User,
 ) -> super::types::HandlerResult {
     let msg = q.message.context("Нет сообщения")?;
-    let page: usize = q
-        .data
-        .unwrap()
-        .split('/')
-        .nth(1)
-        .unwrap_or("0")
-        .parse()?;
+    let page: usize = q.data.unwrap().split('/').nth(1).unwrap_or("0").parse()?;
 
     let data = match user.request::<ActivityList>().await {
         Ok(data) => data,
@@ -79,23 +74,19 @@ pub async fn activity_callback_handlers(
 
     for activities in week.chunk_by(|a, b| a.0.date() == b.0.date()) {
         if let Some((first, _)) = activities.first() {
-            let _ = write!(
-                &mut text,
-                "<b><u>{}</u></b>\n",
-                first.to_rus_date()
-            );
+            let _ = write!(&mut text, "<b><u>{}</u></b>\n", first.to_rus_date());
         } else {
             let _ = bot.answer_callback_query(q.id).await;
 
-            bot.send_message(msg.chat().id, "Вы не учились на этой неделе")
+            bot.edit_message_text(msg.chat().id, msg.id(), "Вы не учились на этой неделе")
                 .reply_markup(kb(page))
                 .await?;
 
             return Ok(());
         }
-        
+
         for (_, a) in activities {
-            let marks: Vec<String> = vec![
+            let marks: Vec<String> = [
                 a.control_work_mark,
                 a.home_work_mark,
                 a.lab_work_mark,
