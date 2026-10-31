@@ -13,18 +13,21 @@ const CATEGORIES: [(u8, &str); 4] = [
     (0, "Просрочено"),
 ];
 
-fn kb(page: usize, hw_type: u8) -> InlineKeyboardMarkup {
+fn kb(page: i64, hw_type: u8, group_id: u64, counter: i64) -> InlineKeyboardMarkup {
     let mut nav = Vec::with_capacity(2);
     if page > 1 {
         nav.push(InlineKeyboardButton::callback(
             "Назад",
-            format!("homeworks/{}/{}", hw_type, page - 1),
+            format!("homeworks/{group_id}/{hw_type}/{}", page - 1),
         ));
     }
-    nav.push(InlineKeyboardButton::callback(
-        "Вперёд",
-        format!("homeworks/{}/{}", hw_type, page + 1),
-    ));
+
+    if counter - (page * 6) > 0 {
+        nav.push(InlineKeyboardButton::callback(
+            "Вперёд",
+            format!("homeworks/{group_id}/{hw_type}/{}", page + 1),
+        ));
+    }
 
     let mut rows = vec![nav];
 
@@ -38,7 +41,7 @@ fn kb(page: usize, hw_type: u8) -> InlineKeyboardMarkup {
                     ""
                 }
             ),
-            format!("homeworks/{id}/1"),
+            format!("homeworks/{group_id}/{id}/1"),
         )]);
     }
 
@@ -50,22 +53,43 @@ fn kb(page: usize, hw_type: u8) -> InlineKeyboardMarkup {
 pub async fn show(
     bot: Bot,
     msg: MaybeInaccessibleMessage,
-    counters: HomeworkCounterList,
-    homeworks: HomeworkList,
-    page: usize,
+    user: User,
+    page: u64,
     hw_type: u8,
+    group_id: u64,
 ) -> HandlerResult {
-    if homeworks.is_empty() {
+    let path = format!("/count/homework?type=0&group_id={group_id}");
+    let counters = match user.request_path::<HomeworkCounterList>(&path).await {
+        Ok(data) => data,
+        Err(err) => {
+            let _ = bot.send_message(msg.chat().id, err.user_message()).await;
+            return Ok(());
+        }
+    };
+
+    let counter = counters.iter().find(|c| c.counter_type == hw_type);
+    let Some(counter) = counter else {
         bot.edit_message_text(
             msg.chat().id,
             msg.id(),
             "В данный момент выбранных домашних заданий нет.",
         )
-        .reply_markup(kb(page, hw_type))
+        .reply_markup(kb(page as i64, hw_type, group_id, 0))
         .await?;
 
         return Ok(());
-    }
+    };
+
+    let path = format!(
+        "/homework/operations/list?page={page}&status={hw_type}&type=0&group_id={group_id}",
+    );
+    let homeworks = match user.request_path::<HomeworkList>(&path).await {
+        Ok(data) => data,
+        Err(err) => {
+            let _ = bot.send_message(msg.chat().id, err.user_message()).await;
+            return Ok(());
+        }
+    };
 
     let mut text = String::new();
     for hw in homeworks {
@@ -101,6 +125,13 @@ pub async fn show(
         );
     }
 
-    send_split(&bot, msg.chat().id, msg.id(), &text, kb(page, hw_type)).await?;
+    send_split(
+        &bot,
+        msg.chat().id,
+        msg.id(),
+        &text,
+        kb(page as i64, hw_type, group_id, counter.counter as i64),
+    )
+    .await?;
     Ok(())
 }

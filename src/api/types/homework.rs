@@ -42,8 +42,8 @@ pub struct Homework {
 
 #[derive(serde::Deserialize, Debug)]
 pub struct HomeworkCounter {
-    pub counter_type: i32,
-    pub counter: i64,
+    pub counter_type: u8,
+    pub counter: u64,
 }
 
 pub type HomeworkCounterList = Vec<HomeworkCounter>;

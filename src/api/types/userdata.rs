@@ -39,8 +39,8 @@ pub struct Visibility {
 pub struct UserData {
     pub groups: Vec<Group>,
     pub manual_link: Option<serde_json::Value>,
-    pub student_id: i64,
-    pub current_group_id: i64,
+    pub student_id: u64,
+    pub current_group_id: u64,
     pub full_name: String,
     pub achieves_count: i64,
     pub stream_id: i64,

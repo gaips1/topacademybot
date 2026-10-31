@@ -8,11 +8,11 @@ pub fn mm_kb() -> InlineKeyboardMarkup {
     InlineKeyboardMarkup::new([[InlineKeyboardButton::callback("В главное меню", "mm")]])
 }
 
-pub fn main_menu_kb() -> InlineKeyboardMarkup {
+pub fn main_menu_kb(group_id: u64) -> InlineKeyboardMarkup {
     let rows = vec![
         vec![InlineKeyboardButton::callback(
             "Домашние задания",
-            "homeworks/3/1",
+            format!("homeworks/{group_id}/3/1"),
         )],
         vec![InlineKeyboardButton::callback(
             "Посещаемость/оценки",

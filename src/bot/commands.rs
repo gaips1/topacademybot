@@ -61,11 +61,11 @@ pub async fn start_command(
 
     if edit {
         bot.edit_message_text(chat_id, msg_id, text)
-            .reply_markup(super::keyboards::main_menu_kb())
+            .reply_markup(super::keyboards::main_menu_kb(data.current_group_id))
             .await?;
     } else {
         bot.send_message(chat_id, text)
-            .reply_markup(super::keyboards::main_menu_kb())
+            .reply_markup(super::keyboards::main_menu_kb(data.current_group_id))
             .await?;
     }
 
