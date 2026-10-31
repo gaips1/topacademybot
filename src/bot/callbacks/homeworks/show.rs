@@ -1,6 +1,9 @@
-use std::fmt::Write as _;
-use crate::{bot::{ext::DateTimeFormatExt, helpers::send_split}, types::*};
+use crate::{
+    bot::{ext::DateTimeFormatExt, helpers::send_split},
+    types::*,
+};
 use chrono::NaiveDateTime;
+use std::fmt::Write as _;
 use teloxide::types::{InlineKeyboardButton, InlineKeyboardMarkup, MaybeInaccessibleMessage};
 
 const CATEGORIES: [(u8, &str); 4] = [
@@ -47,6 +50,7 @@ fn kb(page: usize, hw_type: u8) -> InlineKeyboardMarkup {
 pub async fn show(
     bot: Bot,
     msg: MaybeInaccessibleMessage,
+    counters: HomeworkCounterList,
     homeworks: HomeworkList,
     page: usize,
     hw_type: u8,

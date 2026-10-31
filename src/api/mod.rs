@@ -98,6 +98,16 @@ impl types::User {
         Ok(resp.error_for_status()?.json::<T>().await?)
     }
 
+    pub async fn request_path<T: DeserializeOwned>(&self, path: &str) -> Result<T, ApiError> {
+        let request_builder = REQWEST_CLIENT
+            .get(format!("{BASE_URL}{}", path))
+            .header("Accept", "application/json, text/plain, */*")
+            .header("Referer", "https://journal.top-academy.ru/")
+            .header("Content-Type", "application/json");
+
+        self.request_with_options::<T>(request_builder).await
+    }
+
     pub async fn request<T: types::Endpoint>(&self) -> Result<T, ApiError> {
         let request_builder = REQWEST_CLIENT
             .get(format!("{BASE_URL}{}", T::PATH))
