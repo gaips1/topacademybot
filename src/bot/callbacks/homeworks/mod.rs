@@ -15,11 +15,23 @@ pub async fn homeworks_callbacks_handler(
     let page: u64 = data.next().context("нет страницы")?.parse()?;
     let is_upload = data.next() == Some("upload");
 
-    if let Some(_upload_hw_id) = data.next() {
+    bot.answer_callback_query(q.id).await?;
+
+    if let Some(upload_hw_id) = data.next() {
+        let evaluate: Option<u64> = data.next().and_then(|e| e.parse().ok());
+        upload::upload(
+            bot,
+            msg,
+            page,
+            hw_type,
+            group_id,
+            upload_hw_id.parse()?,
+            evaluate,
+        )
+        .await?;
         return Ok(());
     }
 
-    bot.answer_callback_query(q.id).await?;
     show::show(bot, msg, user, page, hw_type, group_id, is_upload).await?;
 
     Ok(())
