@@ -158,7 +158,7 @@ pub async fn show(
                 "    📅 <b>Выдано:</b> {}\n",
                 "    📅 <b>Сдать до:</b> {}\n",
                 "    ℹ️ <b>Комментарий:</b> {}\n",
-                "    📩 <a href=\"{}\">Скачать назначенное дз</a>\n\n"
+                "    📩 <a href=\"{}\">Скачать назначенное дз</a>\n"
             ),
             hw.name_spec,
             theme,
@@ -169,6 +169,31 @@ pub async fn show(
             hw.comment,
             hw.file_path
         );
+
+        if let Some(stud) = &hw.homework_stud {
+            let done = NaiveDateTime::from_rus(&stud.creation_time);
+            let _ = write!(text, "\n    📅 <b>Сдано:</b> {}\n", done.to_rus_date());
+
+            if let Some(answer) = &stud.stud_answer {
+                let _ = writeln!(text, "    ✅ <b>Твой ответ:</b> {answer}");
+            }
+            if let Some(mark) = &stud.mark {
+                let _ = writeln!(text, "    ⭐ <b>Оценка:</b> {mark}");
+            }
+            if let Some(path) = &stud.file_path {
+                let _ = writeln!(text, "    📩 <a href=\"{path}\">Скачать выполненное дз</a>");
+            }
+        }
+
+        if let Some(comment) = hw
+            .homework_comment
+            .as_ref()
+            .and_then(|c| c.text_comment.as_ref())
+        {
+            let _ = writeln!(text, "    💬 <b>Комментарий преподавателя:</b> {comment}");
+        }
+
+        text.push('\n')
     }
 
     send_split(
