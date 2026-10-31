@@ -3,6 +3,7 @@ use teloxide::{dispatching::dialogue::InMemStorage, prelude::*};
 pub mod api;
 pub mod bot;
 pub mod error;
+pub mod ext;
 
 pub use api::types;
 

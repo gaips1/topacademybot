@@ -1,4 +1,4 @@
-use crate::{bot::ext::DateTimeFormatExt, types::*};
+use crate::{ext::DateTimeFormatExt, types::*};
 use anyhow::Context;
 use chrono::NaiveDateTime;
 use std::fmt::Write;
