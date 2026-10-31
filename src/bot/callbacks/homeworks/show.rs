@@ -1,8 +1,4 @@
-use crate::{
-    bot::helpers::send_split,
-    ext::DateTimeFormatExt,
-    types::*,
-};
+use crate::{bot::helpers::send_split, ext::DateTimeFormatExt, types::*};
 use chrono::NaiveDateTime;
 use std::fmt::Write as _;
 use teloxide::types::{InlineKeyboardButton, InlineKeyboardMarkup, MaybeInaccessibleMessage};

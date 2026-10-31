@@ -1,8 +1,4 @@
-use crate::{
-    bot::helpers::send_split,
-    ext::DateTimeFormatExt,
-    types::*,
-};
+use crate::{bot::helpers::send_split, ext::DateTimeFormatExt, types::*};
 use anyhow::Context;
 use chrono::{Datelike, Duration, NaiveDateTime, NaiveTime};
 use std::fmt::Write;

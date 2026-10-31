@@ -11,7 +11,7 @@ pub async fn cancel_callback_handler(
 
     bot.delete_message(chat_id, message_id).await?;
     dialogue.exit().await?;
-    let _ = bot.answer_callback_query(q.id).text("Отменено!").await;
+    let _ = bot.answer_callback_query(q.id).text("Отменено!").show_alert(true).await;
 
     Ok(())
 }

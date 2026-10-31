@@ -1,12 +1,13 @@
 use crate::types::*;
 
 mod show;
-mod upload;
+pub mod upload;
 
 pub async fn homeworks_callbacks_handler(
     bot: Bot,
     q: CallbackQuery,
     user: User,
+    dialogue: MyDialogue,
 ) -> super::types::HandlerResult {
     let msg = q.message.context("Нет сообщения")?;
     let mut data = q.data.as_deref().unwrap().split('/').skip(1);
@@ -18,7 +19,7 @@ pub async fn homeworks_callbacks_handler(
     bot.answer_callback_query(q.id).await?;
 
     if let Some(upload_hw_id) = data.next() {
-        let evaluate: Option<u64> = data.next().and_then(|e| e.parse().ok());
+        let evaluate: Option<u8> = data.next().and_then(|e| e.parse().ok());
         upload::upload(
             bot,
             msg,
@@ -27,6 +28,7 @@ pub async fn homeworks_callbacks_handler(
             group_id,
             upload_hw_id.parse()?,
             evaluate,
+            dialogue,
         )
         .await?;
         return Ok(());

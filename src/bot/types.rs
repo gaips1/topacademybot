@@ -9,4 +9,22 @@ pub enum State {
     #[default]
     Start,
     ReceiveCredentials,
+
+    HomeworkReceiveTime {
+        homework_id: u64,
+        evaluate: u8,
+    },
+    HomeworkReceiveTextAnswer {
+        homework_id: u64,
+        evaluate: u8,
+        time_hours: u8,
+        time_minutes: u8,
+    },
+    HomeworkReceiveFileAnswer {
+        homework_id: u64,
+        evaluate: u8,
+        time_hours: u8,
+        time_minutes: u8,
+        text_answer: Option<String>,
+    },
 }

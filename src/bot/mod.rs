@@ -32,8 +32,15 @@ pub fn handler() -> UpdateHandler<types::HandlerError> {
                 .branch(
                     Update::filter_message().branch(
                         dptree::entry()
-                            .filter_command::<commands::Command>()
-                            .endpoint(commands::on_command),
+                            .branch(
+                                dptree::entry()
+                                    .filter_command::<commands::Command>()
+                                    .endpoint(commands::on_command)
+                            )
+                            .branch(
+                                dptree::case![types::State::HomeworkReceiveTime { homework_id, evaluate }]
+                                    .endpoint(callbacks::homeworks::upload::receive_time)
+                            )
                     ),
                 )
                 .branch(
