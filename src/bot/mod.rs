@@ -45,6 +45,10 @@ pub fn handler() -> UpdateHandler<types::HandlerError> {
                                 dptree::case![types::State::HomeworkReceiveTextAnswer { homework_id, evaluate, time_hours, time_minutes }]
                                     .endpoint(callbacks::homeworks::upload::receive_text_answer)
                             )
+                            .branch(
+                                dptree::case![types::State::HomeworkReceiveFileAnswer { homework_id, evaluate, time_hours, time_minutes, text_answer }]
+                                    .endpoint(callbacks::homeworks::upload::receive_file_answer)
+                            )
                     ),
                 )
                 .branch(

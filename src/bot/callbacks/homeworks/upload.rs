@@ -1,5 +1,8 @@
-use crate::{bot::keyboards::cancel_kb, types::*};
-use teloxide::types::{InlineKeyboardButton, InlineKeyboardMarkup, MaybeInaccessibleMessage};
+use crate::{bot::keyboards::{cancel_kb, mm_kb}, types::*};
+use teloxide::{
+    net::Download,
+    types::{InlineKeyboardButton, InlineKeyboardMarkup, MaybeInaccessibleMessage},
+};
 
 pub async fn upload(
     bot: Bot,
@@ -128,6 +131,7 @@ pub async fn receive_text_answer(
     let Some(text) = msg.text() else {
         bot.send_message(msg.chat.id, "Отправьте ваш текстовый ответ (или <code>пропустить</code>, чтобы пропустить этот этап):")
             .reply_markup(cancel_kb())
+            .parse_mode(teloxide::types::ParseMode::Html)
             .await?;
         return Ok(());
     };
@@ -136,6 +140,7 @@ pub async fn receive_text_answer(
     if text.len() < 5 {
         bot.send_message(msg.chat.id, "Минимум 5 символов. Отправьте ваш текстовый ответ (или <code>пропустить</code>, чтобы пропустить этот этап):")
             .reply_markup(cancel_kb())
+            .parse_mode(teloxide::types::ParseMode::Html)
             .await?;
         return Ok(());
     }
@@ -145,7 +150,7 @@ pub async fn receive_text_answer(
     } else {
         Some(text.to_string())
     };
-    
+
     let is_some = text_answer.is_some();
 
     dialogue
@@ -173,6 +178,102 @@ pub async fn receive_text_answer(
     .reply_markup(cancel_kb())
     .parse_mode(teloxide::types::ParseMode::Html)
     .await?;
+
+    Ok(())
+}
+
+pub async fn receive_file_answer(
+    bot: Bot,
+    user: User,
+    dialogue: MyDialogue,
+    msg: Message,
+    (homework_id, evaluate, hours, minutes, text_answer): (u64, u8, u8, u8, Option<String>),
+) -> HandlerResult {
+    let text = msg.text().map(|t| t.trim().to_lowercase());
+    if text.as_deref() == Some("пропустить") {
+        if text_answer.is_none() {
+            bot.send_message(
+                msg.chat.id,
+                "Отправьте файл с выполненной домашней работой:",
+            )
+            .reply_markup(cancel_kb())
+            .await?;
+            return Ok(());
+        }
+
+        let result = user
+            .create_homework(
+                homework_id,
+                None,
+                None,
+                hours,
+                minutes,
+                evaluate,
+                text_answer,
+            )
+            .await;
+
+        dialogue.exit().await?;
+
+        let reply = match result {
+            Ok(_) => "Домашнее задание успешно отправлено на проверку!",
+            Err(err) => err.user_message(),
+        };
+        bot.send_message(msg.chat.id, reply)
+            .reply_markup(mm_kb())
+            .await?;
+        
+        return Ok(());
+    }
+
+    let now = chrono::Local::now().format("%d-%m-%Y_%H-%M-%S");
+
+    let (file_id, file_name): (teloxide::types::FileId, String) = if let Some(doc) = msg.document()
+    {
+        (doc.file.id.clone(), doc.file_name.clone().unwrap())
+    } else if let Some(photos) = msg.photo() {
+        let photo = photos.last().unwrap();
+        (photo.file.id.clone(), format!("photo-{}.jpg", now))
+    } else if let Some(video) = msg.video() {
+        (
+            video.file.id.clone(),
+            video
+                .file_name
+                .clone()
+                .unwrap_or_else(|| format!("video-{}.mp4", now)),
+        )
+    } else {
+        bot.send_message(msg.chat.id, "Пожалуйста, отправьте файл, фото или видео:")
+            .reply_markup(cancel_kb())
+            .await?;
+        return Ok(());
+    };
+
+    let file = bot.get_file(file_id).await?;
+    let mut buf: Vec<u8> = Vec::new();
+    bot.download_file(&file.path, &mut buf).await?;
+
+    let result = user
+        .create_homework(
+            homework_id,
+            Some(buf),
+            Some(file_name),
+            hours,
+            minutes,
+            evaluate,
+            text_answer,
+        )
+        .await;
+
+    dialogue.exit().await?;
+
+    let reply = match result {
+        Ok(_) => "Домашнее задание успешно отправлено на проверку!",
+        Err(err) => err.user_message(),
+    };
+    bot.send_message(msg.chat.id, reply)
+        .reply_markup(mm_kb())
+        .await?;
 
     Ok(())
 }
