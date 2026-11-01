@@ -9,9 +9,14 @@ pub async fn cancel_callback_handler(
     let chat_id = q.chat_id().context("Не в чате")?;
     let message_id = q.message.context("Нет сообщения")?.id();
 
-    bot.delete_message(chat_id, message_id).await?;
-    dialogue.exit().await?;
-    let _ = bot.answer_callback_query(q.id).text("Отменено!").show_alert(true).await;
+    let _ = bot
+        .answer_callback_query(q.id)
+        .text("Отменено!")
+        .show_alert(true)
+        .await;
+
+    let _ = dialogue.exit().await;
+    let _ = bot.delete_message(chat_id, message_id).await;
 
     Ok(())
 }

@@ -118,3 +118,61 @@ pub async fn receive_time(
 
     Ok(())
 }
+
+pub async fn receive_text_answer(
+    bot: Bot,
+    dialogue: MyDialogue,
+    msg: Message,
+    (homework_id, evaluate, hours, minutes): (u64, u8, u8, u8),
+) -> HandlerResult {
+    let Some(text) = msg.text() else {
+        bot.send_message(msg.chat.id, "Отправьте ваш текстовый ответ (или <code>пропустить</code>, чтобы пропустить этот этап):")
+            .reply_markup(cancel_kb())
+            .await?;
+        return Ok(());
+    };
+    let text = text.trim();
+
+    if text.len() < 5 {
+        bot.send_message(msg.chat.id, "Минимум 5 символов. Отправьте ваш текстовый ответ (или <code>пропустить</code>, чтобы пропустить этот этап):")
+            .reply_markup(cancel_kb())
+            .await?;
+        return Ok(());
+    }
+
+    let text_answer = if text.to_lowercase() == "пропустить" {
+        None
+    } else {
+        Some(text.to_string())
+    };
+    
+    let is_some = text_answer.is_some();
+
+    dialogue
+        .update(State::HomeworkReceiveFileAnswer {
+            homework_id,
+            evaluate,
+            time_hours: hours,
+            time_minutes: minutes,
+            text_answer,
+        })
+        .await?;
+
+    bot.send_message(
+        msg.chat.id,
+        format!(
+            "Отправьте файл с выполненной домашней работой.\n\
+            Рекомендуется загружать файлы в архиве. Файлы в формате .тхт и .csv не допускаются.{}",
+            if is_some {
+                "\n\n(или <code>пропустить</code>, чтобы пропустить этот этап)"
+            } else {
+                ""
+            }
+        ),
+    )
+    .reply_markup(cancel_kb())
+    .parse_mode(teloxide::types::ParseMode::Html)
+    .await?;
+
+    Ok(())
+}
