@@ -1,6 +1,9 @@
 use crate::error::ApiError;
 use dashmap::DashMap;
-use reqwest::{StatusCode, header::{ACCEPT, HeaderMap, HeaderValue, REFERER}};
+use reqwest::{
+    StatusCode,
+    header::{ACCEPT, HeaderMap, HeaderValue, REFERER},
+};
 use serde::de::DeserializeOwned;
 use serde_json::json;
 use std::{
@@ -17,8 +20,14 @@ pub const BASE_URL: &str = "https://msapi.top-academy.ru/api/v2";
 
 pub static REQWEST_CLIENT: LazyLock<reqwest::Client> = LazyLock::new(|| {
     let mut headers = HeaderMap::new();
-    headers.insert(ACCEPT, HeaderValue::from_static("application/json, text/plain, */*"));
-    headers.insert(REFERER, HeaderValue::from_static("https://journal.top-academy.ru/"));
+    headers.insert(
+        ACCEPT,
+        HeaderValue::from_static("application/json, text/plain, */*"),
+    );
+    headers.insert(
+        REFERER,
+        HeaderValue::from_static("https://journal.top-academy.ru/"),
+    );
 
     reqwest::Client::builder()
         .timeout(Duration::from_secs(30))

@@ -1,5 +1,8 @@
-use crate::types::*;
+use std::time::Duration;
+
+use crate::{bot::callbacks::evaluates::send_evaluate, types::*};
 use teloxide::{macros::BotCommands, prelude::*, types::MessageId};
+use tokio::time::sleep;
 
 #[derive(BotCommands, Clone)]
 #[command(rename_rule = "lowercase")]
@@ -16,7 +19,17 @@ pub async fn on_command(
     dialogue: super::types::MyDialogue,
 ) -> super::types::HandlerResult {
     match cmd {
-        Command::Start => start_command(bot, msg.chat.id, msg.id, user, false).await?,
+        Command::Start => {
+            start_command(
+                bot,
+                msg.chat.id,
+                msg.id,
+                msg.from.context("нет юзера")?.id,
+                user,
+                false,
+            )
+            .await?
+        }
         Command::Relogin => relogin_command(bot, msg, dialogue).await?,
     }
     Ok(())
@@ -26,6 +39,7 @@ pub async fn start_command(
     bot: Bot,
     chat_id: ChatId,
     msg_id: MessageId,
+    user_id: UserId,
     user: User,
     edit: bool,
 ) -> super::types::HandlerResult {
@@ -67,6 +81,13 @@ pub async fn start_command(
         bot.send_message(chat_id, text)
             .reply_markup(super::keyboards::main_menu_kb(data.current_group_id))
             .await?;
+    }
+
+    sleep(Duration::from_secs(2)).await;
+    if let Ok(evaluates) = user.get_evaluates(user_id).await {
+        if let Some(first) = evaluates.first() {
+            let _ = send_evaluate(bot, chat_id, first).await;
+        }
     }
 
     Ok(())

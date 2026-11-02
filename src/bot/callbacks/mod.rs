@@ -4,6 +4,7 @@ use teloxide::prelude::*;
 
 mod activity;
 pub mod cancel;
+pub mod evaluates;
 pub mod homeworks;
 mod leaderboard;
 mod rewards;
@@ -16,7 +17,8 @@ pub async fn callback_handler(
 ) -> types::HandlerResult {
     let custom_id = q.data.as_deref().unwrap_or("");
     let prefix = custom_id.split('/').next().unwrap_or(custom_id);
-    let msg = q.message.as_ref().context("нет сообщения")?;
+    let msg = q.regular_message().context("нет сообщения")?;
+    let user_id = msg.from.as_ref().context("нет юзера")?.id;
 
     match prefix {
         "cancel" => cancel::cancel_callback_handler(bot, q, dialogue).await?,
@@ -24,8 +26,10 @@ pub async fn callback_handler(
         "leaderboard" => leaderboard::leaderboard_callback_handler(bot, q, user).await?,
         "activity" => activity::activity_callback_handler(bot, q, user).await?,
         "homeworks" => homeworks::homeworks_callbacks_handler(bot, q, user, dialogue).await?,
+        "evaluate" => evaluates::evaluate_callback_handler(bot, q, user).await?,
         "mm" => {
-            crate::bot::commands::start_command(bot, msg.chat().id, msg.id(), user, true).await?
+            crate::bot::commands::start_command(bot, msg.chat.id, msg.id, user_id, user, true)
+                .await?
         }
         _ => {}
     }

@@ -11,8 +11,9 @@ pub async fn check_user(
     storage: Arc<InMemStorage<super::types::State>>,
 ) -> Option<User> {
     let chat_id = update.chat()?.id;
+    let user_id = update.from()?.id;
 
-    match User::get(&pool, update.from()?.id.0 as i64).await {
+    match User::get(&pool, user_id.0 as i64).await {
         Some(u) => Some(u),
         None => {
             bot.send_message(chat_id,
@@ -88,7 +89,15 @@ pub async fn auth(
         .await?;
 
         sleep(Duration::from_secs(2)).await;
-        super::commands::start_command(bot, msg.chat.id, msg.id, user, false).await?;
+        super::commands::start_command(
+            bot,
+            msg.chat.id,
+            msg.id,
+            msg.from.context("нет юзера")?.id,
+            user,
+            false,
+        )
+        .await?;
     } else {
         bot.send_message(
             msg.chat.id,
