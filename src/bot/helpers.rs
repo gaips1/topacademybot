@@ -8,6 +8,19 @@ use teloxide::{
 };
 use tokio::time::sleep;
 
+#[macro_export]
+macro_rules! try_or_reply {
+    ($fut:expr, $bot:expr, $chat_id:expr) => {
+        match $fut.await {
+            Ok(data) => data,
+            Err(err) => {
+                let _ = $bot.send_message($chat_id, err.user_message()).await;
+                return Ok(());
+            }
+        }
+    };
+}
+
 pub fn split_text(text: &str) -> Vec<String> {
     let mut parts = Vec::new();
     let mut current = String::new();

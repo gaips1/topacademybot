@@ -1,4 +1,4 @@
-use crate::{ext::DateTimeFormatExt, types::*};
+use crate::{ext::DateTimeFormatExt, try_or_reply, types::*};
 use anyhow::Context;
 use chrono::NaiveDateTime;
 use std::fmt::Write;
@@ -40,15 +40,7 @@ pub async fn rewards_callback_handlers(
         .context("нет страницы")?
         .parse()?;
 
-    let data = match user.request::<RewardsHistory>().await {
-        Ok(data) => data,
-        Err(err) => {
-            let _ = bot
-                .edit_message_text(msg.chat().id, msg.id(), err.user_message())
-                .await;
-            return Ok(());
-        }
-    };
+    let data: RewardsHistory = try_or_reply!(user.request(), bot, msg.chat().id);
 
     let mut text = "<b>🏆 Ваши награды 🏆</b>\n\n".to_string();
     for r in data.iter().skip(page * 10).take(10) {

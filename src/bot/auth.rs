@@ -56,31 +56,10 @@ pub async fn auth(
                     .await?;
                     return Ok(());
                 }
-                Err(crate::error::ApiError::Network(err)) => {
-                    log::error!("{:?}", err);
+                Err(e) => {
                     bot.send_message(
                         msg.chat.id,
-                        "Ошибка на стороне серверов Академии Топ! Попробуйте позже.",
-                    )
-                    .reply_markup(super::keyboards::cancel_kb())
-                    .await?;
-                    return Ok(());
-                }
-                Err(crate::error::ApiError::Database(err)) => {
-                    log::error!("{:?}", err);
-                    bot.send_message(
-                        msg.chat.id,
-                        "Произошла ошибка на нашей стороне. Попробуйте позже.",
-                    )
-                    .reply_markup(super::keyboards::cancel_kb())
-                    .await?;
-                    return Ok(());
-                }
-                Err(crate::error::ApiError::Crypto(err)) => {
-                    log::error!("{:?}", err);
-                    bot.send_message(
-                        msg.chat.id,
-                        "Внутренняя ошибка безопасности. Попробуйте позже.",
+                        e.user_message(),
                     )
                     .reply_markup(super::keyboards::cancel_kb())
                     .await?;
@@ -99,6 +78,7 @@ pub async fn auth(
         .await?;
 
         sleep(Duration::from_secs(2)).await;
+        
         super::commands::start_command(
             bot,
             msg.chat.id,

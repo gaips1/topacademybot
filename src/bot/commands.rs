@@ -1,6 +1,6 @@
 use std::time::Duration;
 
-use crate::{bot::callbacks::evaluates::send_evaluate, types::*};
+use crate::{bot::callbacks::evaluates::send_evaluate, try_or_reply, types::*};
 use teloxide::{macros::BotCommands, prelude::*, types::MessageId};
 use tokio::time::sleep;
 
@@ -43,13 +43,7 @@ pub async fn start_command(
     user: User,
     edit: bool,
 ) -> super::types::HandlerResult {
-    let data = match user.request::<UserData>().await {
-        Ok(data) => data,
-        Err(err) => {
-            let _ = bot.send_message(chat_id, err.user_message()).await;
-            return Ok(());
-        }
-    };
+    let data: UserData = try_or_reply!(user.request(), bot, chat_id);
 
     let coins = data.gaming_points[0].points;
     let gems = data.gaming_points[1].points;

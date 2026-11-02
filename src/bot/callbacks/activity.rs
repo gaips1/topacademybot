@@ -1,4 +1,4 @@
-use crate::{bot::helpers::send_split, ext::DateTimeFormatExt, types::*};
+use crate::{bot::helpers::send_split, ext::DateTimeFormatExt, try_or_reply, types::*};
 use anyhow::Context;
 use chrono::{Datelike, Duration, NaiveDateTime, NaiveTime};
 use std::fmt::Write;
@@ -31,13 +31,7 @@ pub async fn activity_callback_handler(
     let msg = q.message.context("Нет сообщения")?;
     let page: usize = q.data.unwrap().split('/').nth(1).unwrap_or("0").parse()?;
 
-    let data = match user.request::<ActivityList>().await {
-        Ok(data) => data,
-        Err(err) => {
-            let _ = bot.send_message(msg.chat().id, err.user_message()).await;
-            return Ok(());
-        }
-    };
+    let data: ActivityList = try_or_reply!(user.request(), bot, msg.chat().id);
 
     let today = chrono::Local::now().date_naive();
     let monday = today - Duration::days(today.weekday().num_days_from_monday() as i64);

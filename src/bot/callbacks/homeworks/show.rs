@@ -1,4 +1,4 @@
-use crate::{bot::helpers::send_split, ext::DateTimeFormatExt, types::*};
+use crate::{bot::helpers::send_split, ext::DateTimeFormatExt, try_or_reply, types::*};
 use chrono::NaiveDateTime;
 use std::fmt::Write as _;
 use teloxide::types::{InlineKeyboardButton, InlineKeyboardMarkup, MaybeInaccessibleMessage};
@@ -102,13 +102,7 @@ pub async fn show(
     is_upload: bool,
 ) -> HandlerResult {
     let path = format!("/count/homework?type=0&group_id={group_id}");
-    let counters = match user.request_path::<HomeworkCounterList>(&path).await {
-        Ok(data) => data,
-        Err(err) => {
-            let _ = bot.send_message(msg.chat().id, err.user_message()).await;
-            return Ok(());
-        }
-    };
+    let counters: HomeworkCounterList = try_or_reply!(user.request_path(&path), bot, msg.chat().id);
 
     let counter = counters.iter().find(|c| c.counter_type == hw_type);
     let Some(counter) = counter else {
@@ -126,13 +120,7 @@ pub async fn show(
     let path = format!(
         "/homework/operations/list?page={page}&status={hw_type}&type=0&group_id={group_id}",
     );
-    let homeworks = match user.request_path::<HomeworkList>(&path).await {
-        Ok(data) => data,
-        Err(err) => {
-            let _ = bot.send_message(msg.chat().id, err.user_message()).await;
-            return Ok(());
-        }
-    };
+    let homeworks: HomeworkList = try_or_reply!(user.request_path(&path), bot, msg.chat().id);
 
     let mut text = String::new();
     for hw in &homeworks {
