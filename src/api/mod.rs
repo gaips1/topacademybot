@@ -141,14 +141,25 @@ impl types::User {
     }
 
     pub async fn get(pool: &sqlx::PgPool, id: i64) -> Option<Self> {
-        sqlx::query_as!(
+        let mut user = sqlx::query_as!(
             Self,
             r#"SELECT username, password FROM users WHERE id = $1;"#,
             id
         )
         .fetch_one(pool)
         .await
-        .ok()
+        .ok()?;
+
+        match crate::crypto::decrypt_password(&user.password) {
+            Ok(decrypted) => {
+                user.password = decrypted;
+                Some(user)
+            }
+            Err(err) => {
+                log::error!("Ошибка расшифровки пароля пользователя {id}: {err}");
+                None
+            }
+        }
     }
 
     pub async fn new(
@@ -164,6 +175,9 @@ impl types::User {
             None => user.refresh_token(None).await?,
         };
 
+        let encrypted_password =
+            crate::crypto::encrypt_password(&user.password).map_err(ApiError::Crypto)?;
+
         sqlx::query!(
             "INSERT INTO users (id, username, password) \
             VALUES ($1, $2, $3) \
@@ -172,7 +186,7 @@ impl types::User {
                 password = EXCLUDED.password;",
             user_id,
             &user.username,
-            &user.password
+            &encrypted_password
         )
         .execute(pool)
         .await?;

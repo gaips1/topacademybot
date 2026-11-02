@@ -76,6 +76,16 @@ pub async fn auth(
                     .await?;
                     return Ok(());
                 }
+                Err(crate::error::ApiError::Crypto(err)) => {
+                    log::error!("{:?}", err);
+                    bot.send_message(
+                        msg.chat.id,
+                        "Внутренняя ошибка безопасности. Попробуйте позже.",
+                    )
+                    .reply_markup(super::keyboards::cancel_kb())
+                    .await?;
+                    return Ok(());
+                }
             };
 
         bot.delete_messages(msg.chat.id, [msg.id, MessageId { 0: msg.id.0 - 1 }])

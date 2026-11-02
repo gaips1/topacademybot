@@ -10,6 +10,9 @@ pub enum ApiError {
 
     #[error("Не удалось авторизовать пользователя")]
     FailedLogin,
+
+    #[error("Ошибка шифрования: {0}")]
+    Crypto(String),
 }
 
 impl ApiError {
@@ -25,6 +28,10 @@ impl ApiError {
             }
             ApiError::FailedLogin => {
                 "Не получилось войти в Ваш аккаунт. Введите новые данные используя команду /relogin."
+            }
+            ApiError::Crypto(err) => {
+                log::error!("{:#?}", err);
+                "Внутренняя ошибка безопасности. Попробуйте позже."
             }
         }
     }

@@ -1,6 +1,6 @@
 [package]
 name = "topacademybot"
-version = "1.0.0"
+version = "1.1.0"
 edition = "2024"
 
 [dependencies]
@@ -18,3 +18,6 @@ thiserror = "2.0.21"
 dashmap = "6.2.1"
 chrono = { version = "0.4", features = ["serde"] }
 mime_guess = "2.0.5"
+aes-gcm = "0.10"
+base64 = "0.22"
+sha2 = "0.10"
