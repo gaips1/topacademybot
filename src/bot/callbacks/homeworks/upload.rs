@@ -1,4 +1,7 @@
-use crate::{bot::keyboards::{cancel_kb, mm_kb}, types::*};
+use crate::{
+    bot::keyboards::{cancel_kb, mm_kb},
+    types::*,
+};
 use teloxide::{
     net::Download,
     types::{InlineKeyboardButton, InlineKeyboardMarkup, MaybeInaccessibleMessage},
@@ -222,7 +225,7 @@ pub async fn receive_file_answer(
         bot.send_message(msg.chat.id, reply)
             .reply_markup(mm_kb())
             .await?;
-        
+
         return Ok(());
     }
 

@@ -22,12 +22,14 @@ pub struct AuthResponse {
 // --------------------------------------------
 
 mod activity;
+mod evaluates;
 mod homework;
 mod leaderboard;
 mod rewards;
 mod userdata;
 
 pub use activity::*;
+pub use evaluates::*;
 pub use homework::*;
 pub use leaderboard::*;
 pub use rewards::*;

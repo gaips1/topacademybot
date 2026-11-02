@@ -10,11 +10,11 @@ pub async fn check_user(
     pool: sqlx::PgPool,
     storage: Arc<InMemStorage<super::types::State>>,
 ) -> Option<User> {
+    let chat_id = update.chat()?.id;
+
     match User::get(&pool, update.from()?.id.0 as i64).await {
         Some(u) => Some(u),
         None => {
-            let chat_id = update.chat()?.id;
-
             bot.send_message(chat_id,
                 "Введите ваш логин и пароль от Top Academy в формате: <code>логин пароль</code>.\n\
                 Это неофициальный бот. Он не связан с Компьютерной академией ТОР и разработан сторонними авторами." 

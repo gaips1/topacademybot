@@ -19,16 +19,6 @@ pub struct HomeworkStud {
 }
 
 #[derive(serde::Deserialize, Debug, Default)]
-pub struct SendedHomework {
-    pub id: Option<i64>,
-    pub id_dom_zad: Option<i64>,
-    pub id_stud: Option<i64>,
-    pub mark: Option<u8>,
-    pub comment: Option<String>,
-    pub tags: Option<Vec<serde_json::Value>>,
-}
-
-#[derive(serde::Deserialize, Debug, Default)]
 pub struct Homework {
     pub id: i64,
     pub id_spec: i64,
