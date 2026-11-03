@@ -1,6 +1,7 @@
 use std::time::Duration;
 
-use crate::{bot::callbacks::evaluates::send_evaluate, try_or_reply, types::*};
+use crate::{bot::callbacks::evaluates::send_evaluate, ext::DateTimeFormatExt, try_or_reply, types::*};
+use chrono::NaiveDateTime;
 use teloxide::{macros::BotCommands, prelude::*, types::MessageId};
 use tokio::time::sleep;
 
@@ -47,6 +48,7 @@ pub async fn start_command(
 
     let coins = data.gaming_points[0].points;
     let gems = data.gaming_points[1].points;
+    let reg_date = NaiveDateTime::from_rus(&data.registration_date);
 
     let text = format!(
         "Привет, {}!\n\n\
@@ -62,7 +64,7 @@ pub async fn start_command(
         Это неофициальный бот. Он не связан с Компьютерной академией ТОР и разработан сторонними авторами.",
         data.full_name,
         data.student_id,
-        data.registration_date,
+        reg_date.to_rus(),
         data.group_name,
         coins + gems
     );
