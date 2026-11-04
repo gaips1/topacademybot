@@ -1,6 +1,6 @@
 use aes_gcm::{
-    aead::{Aead, AeadCore, KeyInit, OsRng},
     Aes256Gcm, Key, Nonce,
+    aead::{Aead, AeadCore, KeyInit, OsRng},
 };
 use base64::prelude::*;
 use sha2::{Digest, Sha256};
@@ -9,8 +9,7 @@ use std::sync::LazyLock;
 const ENCRYPTED_PREFIX: &str = "enc:";
 
 static CIPHER: LazyLock<Aes256Gcm> = LazyLock::new(|| {
-    let secret = std::env::var("ENCRYPTION_KEY")
-        .expect("no ENCRYPTION_KEY");
+    let secret = std::env::var("ENCRYPTION_KEY").expect("no ENCRYPTION_KEY");
     let key_bytes = Sha256::digest(secret.as_bytes());
     Aes256Gcm::new(Key::<Aes256Gcm>::from_slice(&key_bytes))
 });

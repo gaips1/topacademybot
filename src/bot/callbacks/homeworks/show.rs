@@ -151,7 +151,11 @@ pub async fn show(
             hw.fio_teach,
             creation_time.to_rus_date(),
             comletion_time.to_rus_date(),
-            if hw.comment.is_empty() { "Нет" } else { &hw.comment },
+            if hw.comment.is_empty() {
+                "Нет"
+            } else {
+                &hw.comment
+            },
             hw.file_path
         );
 

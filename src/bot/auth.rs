@@ -57,12 +57,9 @@ pub async fn auth(
                     return Ok(());
                 }
                 Err(e) => {
-                    bot.send_message(
-                        msg.chat.id,
-                        e.user_message(),
-                    )
-                    .reply_markup(super::keyboards::cancel_kb())
-                    .await?;
+                    bot.send_message(msg.chat.id, e.user_message())
+                        .reply_markup(super::keyboards::cancel_kb())
+                        .await?;
                     return Ok(());
                 }
             };
@@ -78,7 +75,7 @@ pub async fn auth(
         .await?;
 
         sleep(Duration::from_secs(2)).await;
-        
+
         super::commands::start_command(
             bot,
             msg.chat.id,
