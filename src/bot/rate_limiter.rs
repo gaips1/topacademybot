@@ -27,13 +27,11 @@ pub async fn check_rate_limit(bot: Bot, update: Update) -> bool {
 }
 
 pub fn run_clean_limiters_task() {
-    tokio::spawn(async {
-        loop {
-            tokio::time::sleep(Duration::from_secs(60)).await;
-            LIMITER.retain_recent();
-            LIMITER.shrink_to_fit();
-            WARN_LIMITER.retain_recent();
-            WARN_LIMITER.shrink_to_fit();
-        }
+    std::thread::spawn(|| loop {
+        std::thread::sleep(Duration::from_secs(60));
+        LIMITER.retain_recent();
+        LIMITER.shrink_to_fit();
+        WARN_LIMITER.retain_recent();
+        WARN_LIMITER.shrink_to_fit();
     });
 }
