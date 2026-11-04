@@ -20,7 +20,7 @@ impl ApiError {
         match self {
             ApiError::Network(err) => {
                 log::error!("{:#?}", err);
-                "Сервис сейчас недоступен. Попробуйте чуть позже."
+                "Сервис сейчас недоступен. Попробуйте позже."
             }
             ApiError::Database(err) => {
                 log::error!("{:#?}", err);

@@ -8,11 +8,13 @@ pub mod callbacks;
 mod commands;
 pub mod helpers;
 pub mod keyboards;
+pub mod rate_limiter;
 pub mod types;
 
 #[rustfmt::skip]
 pub fn handler() -> UpdateHandler<types::HandlerError> {
     dptree::entry()
+        .filter_async(rate_limiter::check_rate_limit)
         .enter_dialogue::<Update, InMemStorage<types::State>, types::State>()
         .branch(
             Update::filter_message()

@@ -28,6 +28,8 @@ async fn main() {
 
     let bot = Bot::from_env();
 
+    crate::bot::rate_limiter::run_clean_limiters_task();
+
     Dispatcher::builder(bot, bot::handler())
         .dependencies(dptree::deps![
             pool,
