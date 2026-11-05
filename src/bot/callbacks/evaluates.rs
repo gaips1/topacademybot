@@ -1,6 +1,6 @@
 use std::time::Duration;
 
-use crate::{ext::DateTimeFormatExt, types::*};
+use crate::{ext::DateTimeFormatExt, try_or_reply, types::*};
 use chrono::NaiveDateTime;
 use teloxide::types::{InlineKeyboardButton, InlineKeyboardMarkup};
 use tokio::time::sleep;
@@ -47,9 +47,11 @@ pub async fn evaluate_callback_handler(
     let eval_2: Option<u8> = data.next().and_then(|e| Some(e.parse().ok()?));
 
     if eval_1.is_some() && eval_2.is_some() {
-        let evaluations = user
-            .evaluate_lesson(q.from.id, key, eval_1.unwrap(), eval_2.unwrap())
-            .await?;
+        let evaluations = try_or_reply!(
+            user.evaluate_lesson(q.from.id, key, eval_1.unwrap(), eval_2.unwrap()),
+            bot,
+            msg.chat.id
+        );
 
         bot.edit_message_text(msg.chat.id, msg.id, "Спасибо за Ваши оценки!")
             .await?;
