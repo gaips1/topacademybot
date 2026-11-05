@@ -58,8 +58,8 @@ pub async fn evaluate_callback_handler(
 
         sleep(Duration::from_millis(1_500)).await;
 
-        if !evaluations.is_empty() {
-            send_evaluate(bot, msg.chat.id, evaluations.first().unwrap()).await?;
+        if let Some(first) = evaluations.first() {
+            send_evaluate(bot, msg.chat.id, first).await?;
         }
 
         return Ok(());
