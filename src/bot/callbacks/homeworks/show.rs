@@ -1,5 +1,5 @@
 use crate::{bot::helpers::send_split, ext::DateTimeFormatExt, try_or_reply, types::*};
-use chrono::NaiveDateTime;
+use chrono::NaiveDate;
 use std::fmt::Write as _;
 use teloxide::types::{InlineKeyboardButton, InlineKeyboardMarkup, MaybeInaccessibleMessage};
 
@@ -124,8 +124,8 @@ pub async fn show(
 
     let mut text = String::new();
     for hw in &homeworks {
-        let creation_time = NaiveDateTime::from_rus(&hw.creation_time);
-        let comletion_time = NaiveDateTime::from_rus(&hw.completion_time);
+        let creation_time = NaiveDate::from_rus(&hw.creation_time);
+        let comletion_time = NaiveDate::from_rus(&hw.completion_time);
 
         let theme: String = hw.theme.chars().take(50).collect();
         let ellipsis = if hw.theme.chars().count() > 50 {
@@ -149,8 +149,8 @@ pub async fn show(
             theme,
             ellipsis,
             hw.fio_teach,
-            creation_time.to_rus_date(),
-            comletion_time.to_rus_date(),
+            creation_time.to_rus(),
+            comletion_time.to_rus(),
             if hw.comment.is_empty() {
                 "Нет"
             } else {
@@ -160,8 +160,8 @@ pub async fn show(
         );
 
         if let Some(stud) = &hw.homework_stud {
-            let done = NaiveDateTime::from_rus(&stud.creation_time);
-            let _ = write!(text, "\n    📅 <b>Сдано:</b> {}\n", done.to_rus_date());
+            let done = NaiveDate::from_rus(&stud.creation_time);
+            let _ = write!(text, "\n    📅 <b>Сдано:</b> {}\n", done.to_rus());
 
             if let Some(answer) = &stud.stud_answer {
                 let _ = writeln!(text, "    ✅ <b>Твой ответ:</b> {answer}");

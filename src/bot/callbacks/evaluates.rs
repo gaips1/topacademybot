@@ -1,7 +1,7 @@
 use std::time::Duration;
 
 use crate::{ext::DateTimeFormatExt, try_or_reply, types::*};
-use chrono::NaiveDateTime;
+use chrono::NaiveDate;
 use teloxide::types::{InlineKeyboardButton, InlineKeyboardMarkup};
 use tokio::time::sleep;
 
@@ -24,7 +24,7 @@ pub async fn send_evaluate(bot: Bot, chat_id: ChatId, evaluate: &Evaluate) -> Ha
             "Оцените занятие: {} {}\n\n\
             Оцените работу преподавателя {}:",
             evaluate.spec_name.to_uppercase(),
-            NaiveDateTime::from_rus(&evaluate.date_visit).to_rus_date(),
+            NaiveDate::from_rus(&evaluate.date_visit).to_rus(),
             evaluate.fio_teach
         ),
     )

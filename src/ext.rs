@@ -1,23 +1,26 @@
-use chrono::{NaiveDate, NaiveDateTime, NaiveTime};
+use chrono::{NaiveDate, NaiveDateTime, format::{DelayedFormat, StrftimeItems}};
 
 pub trait DateTimeFormatExt {
-    fn from_rus(fmt: &str) -> NaiveDateTime;
-    fn to_rus(&self) -> String;
-    fn to_rus_date(&self) -> String;
+    fn from_rus(fmt: &str) -> Self;
+    fn to_rus(&self) -> DelayedFormat<StrftimeItems<'_>>;
 }
 
 impl DateTimeFormatExt for NaiveDateTime {
     fn from_rus(fmt: &str) -> NaiveDateTime {
         NaiveDateTime::parse_from_str(fmt, "%Y-%m-%d %H:%M:%S")
-            .or_else(|_| {
-                NaiveDate::parse_from_str(fmt, "%Y-%m-%d").map(|d| d.and_time(NaiveTime::MIN))
-            })
             .unwrap_or(NaiveDateTime::MIN)
     }
-    fn to_rus(&self) -> String {
-        self.format("%d.%m.%Y %H:%M").to_string()
+    fn to_rus(&self) -> DelayedFormat<StrftimeItems<'_>> {
+        self.format("%d.%m.%Y %H:%M")
     }
-    fn to_rus_date(&self) -> String {
-        self.format("%d.%m.%Y").to_string()
+}
+
+impl DateTimeFormatExt for NaiveDate {
+    fn from_rus(fmt: &str) -> NaiveDate {
+        NaiveDate::parse_from_str(fmt, "%Y-%m-%d")
+            .unwrap_or(NaiveDate::MIN)
+    }
+    fn to_rus(&self) -> DelayedFormat<StrftimeItems<'_>>{
+        self.format("%d.%m.%Y")
     }
 }

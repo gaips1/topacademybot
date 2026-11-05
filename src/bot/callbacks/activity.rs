@@ -54,13 +54,13 @@ pub async fn activity_callback_handler(
 
     let mut text = format!(
         "<b>🗓️ Учебная неделя {} - {}</b>\n\n",
-        start.to_rus_date(),
-        (end - Duration::days(1)).to_rus_date()
+        start.date().to_rus(),
+        (end - Duration::days(1)).date().to_rus()
     );
 
     for activities in week.chunk_by(|a, b| a.0.date() == b.0.date()) {
         if let Some((first, _)) = activities.first() {
-            let _ = write!(&mut text, "<b><u>{}</u></b>\n", first.to_rus_date());
+            let _ = write!(&mut text, "<b><u>{}</u></b>\n", first.date().to_rus());
         } else {
             let _ = bot.answer_callback_query(q.id).await;
 
