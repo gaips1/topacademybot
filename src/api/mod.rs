@@ -58,7 +58,7 @@ impl types::User {
             .await?;
 
         match resp.status() {
-            reqwest::StatusCode::UNAUTHORIZED | StatusCode::UNPROCESSABLE_ENTITY => {
+            reqwest::StatusCode::UNAUTHORIZED => {
                 return Err(crate::error::ApiError::FailedLogin);
             }
             _ => {
