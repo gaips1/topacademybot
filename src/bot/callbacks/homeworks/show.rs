@@ -122,6 +122,17 @@ pub async fn show(
     );
     let homeworks: HomeworkList = try_or_reply!(user.request_path(&path), bot, msg.chat().id);
 
+    if homeworks.is_empty() {
+        bot.edit_message_text(
+            msg.chat().id,
+            msg.id(),
+            "В данный момент выбранных домашних заданий нет.",
+        )
+        .reply_markup(kb(page as i64, hw_type, group_id, 0, is_upload, None))
+        .await?;
+        return Ok(());
+    }
+
     let mut text = String::new();
     for hw in &homeworks {
         let creation_time = NaiveDate::from_rus(&hw.creation_time);
